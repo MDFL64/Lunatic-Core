@@ -150,6 +150,9 @@ boot_stage2:
 	; load gdt
 	lgdt [_gdt.ptr]
 
+	mov ax, _gdt.unreal
+	mov es, ax
+
 	; switch back to real mode
 	mov eax, cr0
 	and eax,0x7FFFFFFE
@@ -192,6 +195,15 @@ _gdt:
 	db 0 ; base, middle
 	db 0 ; access
 	db 0 ; flags, limit high ???
+	db 0 ; base, high
+
+	.unreal = $ - _gdt
+	dw 0xFFFF ; limit, low
+	dw 0 ; base, low
+	.unreal_base_middle:
+	db 0x10 ; base, middle
+	db 10010010b; access
+	db 00000000b ; flags, limit high ???
 	db 0 ; base, high
 
 	.code = $ - _gdt
