@@ -1,0 +1,1 @@
+start C:\"Program Files"\Oracle\VirtualBox\VirtualBox.exe --startvm Gar32 --debug
