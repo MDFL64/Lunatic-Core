@@ -1,4 +1,4 @@
-# Gargamel
+# Lunatic OS
 
 God told Terry to make TempleOS,
 
