@@ -2,13 +2,18 @@
 macro display_num num 
 {
 	value = num
-	pos=100
-	repeat 3
+	pos=1
+
+	while pos*10<=num
+		pos=pos*10
+	end while
+
+	while pos>=1
 		digit=value/pos 
 		value=value-(digit*pos)
 		pos=pos/10
 		display ('0'+digit)
-	end repeat
+	end while
 }
 
 ; This is the boot sector.
@@ -17,31 +22,74 @@ macro display_num num
 
 use16
 org 0x7c00
-boot_stage1:
-	; Used to bother with resetting segments here, but it doesn't seem all that important.
+	jmp boot_stage1
+	nop
 
-	; Load stage 2
-	mov ah,0x02
-	mov al,stage2_sectors
-	mov ch,0
-	mov cl,2 ;fucking sector indexing starts at 1, wtf
-	mov dh,0
-	mov bx,0x07e0
-	mov es,bx
-	mov bx,0
+bpb:
+	rb 87 ; We patch this in later using our build script.
+
+boot_stage1:
+
+	; No interrupts!
+	cli
+	
+	; store boot disk
+	mov [disk_n],dl
+
+	; enable A20 line
+	mov ax, 0x2401
+	int 0x15
+
+	mov si, error_a20
+	jc boot_halt
+
+	; check 64 bit support
+	mov eax, 0x80000001
+	cpuid
+	test edx,0x20000000
+
+	mov si, error_longmode
+	jz boot_halt
+
+	; Check for disk extension support.
+	mov dl, [disk_n]
+	mov ah, 0x41
+	mov bx, 0x55AA
 	int 0x13
 
-	mov si,fail_load_stage2
-	jc fail
+	mov si,error_disk_unsupported
+	jc boot_halt
+
+	; Load stage 2.
+	mov ah, 0x42
+	mov si, disk_addr
+	int 0x13
+
+	mov si,error_disk_failed
+	jc boot_halt
+
 	jmp boot_stage2
 
-fail:
-	call putstr
-	mov si,fail_end
-	call putstr
+	; Load stage 2
+	;mov ah,0x02
+	;mov al,stage2_sectors
+	;mov ch,0
+	;mov cl,2 ;fucking sector indexing starts at 1, wtf
+	;mov dh,0
+	;mov bx,0x07e0
+	;mov es,bx
+	;mov bx,0
+	;int 0x13
 
-	@@:
-	jmp @b
+	;mov si,error_disk
+	;jc fail
+	;jmp boot_stage2
+
+boot_halt:
+	call putstr
+	mov si,error_halt
+	call putstr
+	hlt
 
 putstr:
 	mov ah,0x0e
@@ -60,10 +108,27 @@ putstr:
 	.end:
 	retn
 
-fail_load_stage2:
-	db "Failed to load stage 2 code from disk.",0
-fail_end:
+error_a20:
+	db "Failed to fix A20 line.",0
+error_longmode:
+	db "Your processor does not support long mode.",0x0a,0x0d
+	db "If you're using a virtual machine, it may be configured incorrectly.",0
+error_disk_unsupported:
+	db "Can't load the rest of the boot loader.",0
+error_disk_failed:
+	db "Failed to load the rest of the boot loader.",0
+error_halt:
 	db 0x0a,0x0a,0x0d," - BOOT HALTED -",0
+
+disk_n:
+	db 0
+disk_addr:
+	db 0x10 ; packet size
+	db 0 ; reserved
+	dw stage2_sectors ; sector count (MAX 127 ON SOME BIOS)
+	dw 0,0x07e0 ; read buffer
+	dq 1
+
 
 ; Fill out boot sector.
 bytes_left = 510-($-$$)
@@ -76,23 +141,8 @@ times bytes_left db 0
 db 055h, 0AAh
 
 boot_stage2:
-	; check 64 bit support
-	mov eax, 0x80000001
-	cpuid
-	test edx,0x20000000
-	
-	mov si, fail_longmode
-	jz fail
-
-	; enable A20 line
-	mov ax, 0x2401
-	int 0x15
-
-	mov si, fail_a20
-	jc fail
-
-	; turn off interrupts
-	cli
+	; load gdt
+	lgdt [_gdt.ptr]
 
 	; set up page tables
 	mov bx, page_table/16
@@ -143,24 +193,49 @@ boot_stage2:
 	wrmsr
 
 	; enable paging and protected mode
-	mov eax, cr0
-	or eax, 0x80000001
-	mov cr0, eax
+	;mov eax, cr0
+	;or eax, 0x80000001 ; 0x80000001
+	;mov cr0, eax
 
-	; load gdt
-	lgdt [_gdt.ptr]
 
-	mov ax, _gdt.unreal
-	mov es, ax
+	;mov ax, _gdt.unreal
+	;mov es, ax
+
+	;hlt
 
 	; switch back to real mode
-	mov eax, cr0
-	and eax,0x7FFFFFFE
-	mov cr0, eax
+	;mov eax, cr0
+	;and eax,0x7FFFFFFE
+	;mov cr0, eax
 	
+	; hlt
+
+	; sti
+	;hlt
+
 	mov si, hello
 	call putstr
 	; ???
+	;hlt
+
+	;mov ax, 0
+	;mov es, ax
+
+	;mov eax,"BALZ"
+	;mov bx,0
+	;mov [es:bx],eax
+
+	;mov ah,0x02
+	;mov al,stage2_sectors
+	;mov ch,0
+	;mov cl,2 ;fucking sector indexing starts at 1, wtf
+	;mov dh,0
+	;mov bx,0
+	;int 0x13
+
+	hlt
+	hlt
+	hlt
 	hlt
 
 	;jmp _gdt.code:boot_stage3
@@ -178,15 +253,10 @@ boot_stage3:
 
 	hlt
 
-fail_longmode:
-	db "Your processor does not support long mode.",0x0a,0x0d
-	db "If you're using a virtual machine, it may be configured incorrectly.",0
 
-fail_a20:
-	db "Failed to fix A20 line.",0
 
 hello:
-	db "eyy lmao",0
+	db "Everything seems to be working! Yay~",0
 
 _gdt:
 	.null = $ - _gdt
@@ -197,14 +267,14 @@ _gdt:
 	db 0 ; flags, limit high ???
 	db 0 ; base, high
 
-	.unreal = $ - _gdt
-	dw 0xFFFF ; limit, low
-	dw 0 ; base, low
-	.unreal_base_middle:
-	db 0x10 ; base, middle
-	db 10010010b; access
-	db 00000000b ; flags, limit high ???
-	db 0 ; base, high
+	;.unreal = $ - _gdt
+	;dw 0xFFFF ; limit, low
+	;dw 0 ; base, low
+	;.unreal_base_middle:
+	;db 0x10 ; base, middle
+	;db 10010010b; access
+	;db 00000000b ; flags, limit high ???
+	;db 0 ; base, high
 
 	.code = $ - _gdt
 	dw 0 ; limit, low
@@ -224,7 +294,7 @@ _gdt:
 
 	.ptr:
 	dw $ - _gdt - 1 ; single entry
-	dq _gdt
+	dd _gdt
 
 ; Fill disk to even number of sectors!
 times 512-(($-$$) mod 512) db 0
