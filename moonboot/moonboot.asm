@@ -52,9 +52,6 @@ boot_stage1:
 
 	; store boot disk
 	mov [disk_n],dl
-	
-	;cli
-	;hlt
 
 	; relocate stack
 	mov ax,0x5000
@@ -108,7 +105,6 @@ print_str:
 
 	mov ah,0x0e
 	mov bh,0
-	mov bl,0x0d
 
 	.top:
 	mov al,[si]
@@ -145,19 +141,17 @@ error_longmode:
 error_a20:
 	db "Failed to fix A20 line.",0
 error_disk_unsupported:
-	db "Can't load the rest of the boot loader.",0
+	db "Can't read sectors from disk.",0
 error_disk_failed:
-	db "Failed to load the rest of the boot loader.",0
+	db "Failed to read sectors from disk.",0
 error_halt:
 	db 0x0a,0x0a,0x0d," - BOOT HALTED -",0
-
-
 
 ; Fill out boot sector.
 bytes_left = 510-($-$$)
 
 display "Bytes left in boot sector: "
-display_num bytes_left
+display_num (bytes_left-64)
 display 0x0a,0x0d
 
 times bytes_left db 0
@@ -231,12 +225,72 @@ boot_stage2:
 	mov eax, [fat_bpb.root_cluster_n]
 	call fat_read_file
 
+	; read the directory!
+	mov ax,0x1000
+	mov es,ax
+	xor eax,eax
+
+	.top:
+	
+	; end of directory
+	mov bl, [es:eax]
+	cmp bl, 0
+	je .done
+	
+	; empty entry
+	cmp bl, 0x05
+	je .skip
+	cmp bl, 0xE5
+	je .skip
+
+	; volume labels and LFNs
+	mov bl, [es:eax+0x0B]
+	test bl,0x08
+	jnz .skip
+
+	mov esi, eax
+	call print_filename
+
+	.skip:
+	add eax, 32
+	jmp .top
+
+	.done:
+
 	; Say hi
 	mov si, hello
 	call print_str
 
 	cli
 	hlt
+
+print_filename:
+	pushad
+
+	mov ah,0x0e
+	mov bh,0
+
+	mov cx,si
+	add cx,11
+
+	.top:
+	mov al,[es:si]
+	cmp si,cx
+	jge .end
+	
+	int 0x10
+	inc si
+	jmp .top
+	
+	.end:
+	mov al,0x0a
+	int 0x10
+
+	mov al,0x0d
+	int 0x10
+
+	popad
+	ret
 
 fat_table_cache_index:
 	dd 1 ; set 1st index to an invalid value
