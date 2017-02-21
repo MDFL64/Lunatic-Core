@@ -4,7 +4,12 @@ macro display_num num
 	value = num
 	pos=1
 
-	while pos*10<=num
+	if value<0
+		value = -value
+		display '-'
+	end if
+
+	while pos*10<=value
 		pos=pos*10
 	end while
 
@@ -16,33 +21,47 @@ macro display_num num
 	end while
 }
 
+macro preserve_eax {
+	mov [esp+28],eax
+}
+
+macro preserve_ebx {
+	mov [esp+16],ebx
+}
+
 ; This is the boot sector.
 ; All we really want to do here is load the rest of the boot code!
 ; Assume a 1.44mb floppy. 80 tracks, 18 sectors, 2 heads
 
 use16
 org 0x7c00
+fat_bpb:
+	.sectors_per_cluster = $ + 13
+	.reserved_sectors = $ + 14
+	.fat_count = $ + 16
+	.sector_count_tiny = $ + 19
+	.sector_count = $ + 32
+	.sectors_per_fat = $ + 36
+	.root_cluster_n = $ + 44
+
 	jmp boot_stage1
 	nop
-
-bpb:
 	rb 87 ; We patch this in later using our build script.
 
 boot_stage1:
 
-	; No interrupts!
-	cli
-	
 	; store boot disk
 	mov [disk_n],dl
+	
+	;cli
+	;hlt
 
-	; enable A20 line
-	mov ax, 0x2401
-	int 0x15
-
-	mov si, error_a20
-	jc boot_halt
-
+	; relocate stack
+	mov ax,0x5000
+	mov ss,ax
+	mov esp,0xFFF0
+	mov ebp,esp
+	
 	; check 64 bit support
 	mov eax, 0x80000001
 	cpuid
@@ -50,6 +69,13 @@ boot_stage1:
 
 	mov si, error_longmode
 	jz boot_halt
+
+	; enable A20 line
+	mov ax, 0x2401
+	int 0x15
+	
+	mov si, error_a20
+	jc boot_halt
 
 	; Check for disk extension support.
 	mov dl, [disk_n]
@@ -70,28 +96,16 @@ boot_stage1:
 
 	jmp boot_stage2
 
-	; Load stage 2
-	;mov ah,0x02
-	;mov al,stage2_sectors
-	;mov ch,0
-	;mov cl,2 ;fucking sector indexing starts at 1, wtf
-	;mov dh,0
-	;mov bx,0x07e0
-	;mov es,bx
-	;mov bx,0
-	;int 0x13
-
-	;mov si,error_disk
-	;jc fail
-	;jmp boot_stage2
-
 boot_halt:
-	call putstr
+	call print_str
 	mov si,error_halt
-	call putstr
+	call print_str
+	cli
 	hlt
 
-putstr:
+print_str:
+	pushad
+
 	mov ah,0x0e
 	mov bh,0
 	mov bl,0x0d
@@ -106,13 +120,30 @@ putstr:
 	jmp .top
 	
 	.end:
-	retn
 
-error_a20:
-	db "Failed to fix A20 line.",0
+	popad
+	ret
+
+disk_n:
+	db 0
+disk_addr:
+	db 0x10 ; packet size
+	db 0 ; reserved
+	.sector_count:
+	dw stage2_sectors ; sector count (MAX 127 ON SOME BIOS)
+	dw 0;
+	.dest_segment:
+	dw 0x07e0 ; read buffer
+	.sector_index:
+	dq 1
+
+; we should be safe pushing text over the partition table.
+
 error_longmode:
 	db "Your processor does not support long mode.",0x0a,0x0d
 	db "If you're using a virtual machine, it may be configured incorrectly.",0
+error_a20:
+	db "Failed to fix A20 line.",0
 error_disk_unsupported:
 	db "Can't load the rest of the boot loader.",0
 error_disk_failed:
@@ -120,14 +151,6 @@ error_disk_failed:
 error_halt:
 	db 0x0a,0x0a,0x0d," - BOOT HALTED -",0
 
-disk_n:
-	db 0
-disk_addr:
-	db 0x10 ; packet size
-	db 0 ; reserved
-	dw stage2_sectors ; sector count (MAX 127 ON SOME BIOS)
-	dw 0,0x07e0 ; read buffer
-	dq 1
 
 
 ; Fill out boot sector.
@@ -140,45 +163,49 @@ display 0x0a,0x0d
 times bytes_left db 0
 db 055h, 0AAh
 
+fat_fsi:
+	rb 512
+
 boot_stage2:
+
 	; load gdt
 	lgdt [_gdt.ptr]
 
 	; set up page tables
-	mov bx, page_table/16
+	mov bx, 0x7000
 	mov es, bx
 	
 	; zero all three tables
-	mov bx,0
+	mov bx, 0
 	mov eax, 0
 	.zero_pages:
 	mov [es:bx], eax
-	add bx,4
-	cmp bx,0x3000
+	add bx, 4
+	cmp bx, 0x3000
 	jl .zero_pages
 
 	; root points to 512*512 gig (256 tb) -> only ever fill first entry, mark rest as non-existant
-	mov bx,0
-	mov eax,page_table+0x1000+1
+	mov bx, 0
+	mov eax, 0x71001
 	mov [es:bx], eax
 
 	; mid table points to 512*1 gig tables (512 gig) -> fill first entry initially, mark rest as non-existant, allow extension later
 	mov bx,0x1000
-	mov eax,page_table+0x2000+1
+	mov eax, 0x72001
 	mov [es:bx], eax
 
 	; lowest table points to 512*2 mb pages (1 gig) -> always fill, PS SET
-	mov bx,0x2000
-	mov eax,0x0081
+	mov bx, 0x2000
+	mov eax, 0x0081
 	.fill_table:
 	mov [es:bx], eax
-	add bx,8
-	add eax,0x00200000
-	cmp bx,0x3000
+	add bx, 8
+	add eax, 0x00200000
+	cmp bx, 0x3000
 	jl .fill_table
 	
 	; tell the processor where the page table is
-	mov eax, page_table
+	mov eax, 0x70000
 	mov cr3, eax
 
 	; enable pae
@@ -192,71 +219,171 @@ boot_stage2:
 	or eax, 0x100
 	wrmsr
 
-	; enable paging and protected mode
-	;mov eax, cr0
-	;or eax, 0x80000001 ; 0x80000001
-	;mov cr0, eax
+	; Calculate FAT cluster base.
+	mov eax, [fat_bpb.sectors_per_fat]
+	movzx ebx, byte [fat_bpb.fat_count]
+	imul eax, ebx
+	movzx ebx, word [fat_bpb.reserved_sectors]
+	add eax, ebx
+	mov [fat_cluster_base], eax
 
+	; Read root directory
+	mov eax, [fat_bpb.root_cluster_n]
+	call fat_read_file
 
-	;mov ax, _gdt.unreal
-	;mov es, ax
-
-	;hlt
-
-	; switch back to real mode
-	;mov eax, cr0
-	;and eax,0x7FFFFFFE
-	;mov cr0, eax
-	
-	; hlt
-
-	; sti
-	;hlt
-
+	; Say hi
 	mov si, hello
-	call putstr
-	; ???
-	;hlt
+	call print_str
 
-	;mov ax, 0
-	;mov es, ax
-
-	;mov eax,"BALZ"
-	;mov bx,0
-	;mov [es:bx],eax
-
-	;mov ah,0x02
-	;mov al,stage2_sectors
-	;mov ch,0
-	;mov cl,2 ;fucking sector indexing starts at 1, wtf
-	;mov dh,0
-	;mov bx,0
-	;int 0x13
-
-	hlt
-	hlt
-	hlt
+	cli
 	hlt
 
-	;jmp _gdt.code:boot_stage3
+fat_table_cache_index:
+	dd 1 ; set 1st index to an invalid value
+	rd 127
 
-use64
-boot_stage3:
-	; fix the rest of the segment selectors
-	mov ax, _gdt.data
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	mov rsp, 0x7FFFF
+; eax = current cluster -> eax = next cluster
+fat_next_cluster:
+	pushad
+	
+	mov ebx,eax
+	shr ebx,7
+	; ebx = table sector
 
-	hlt
+	mov ecx,ebx
+	and ecx,0x7F
+	; ecx = table sector IN cache
+
+	mov edx,[fat_table_cache_index+ecx*4]
+	; edx = table sector currently loaded in cache
+
+	cmp ebx,edx
+	je .noload
+
+	push eax
+
+	; table sector not cached, load it
+	movzx eax, word [fat_bpb.reserved_sectors]
+	add eax, ebx
+	mov [disk_addr.sector_index], eax
+	mov [disk_addr.sector_count], word 1
+
+	mov ax, 0x20
+	imul ax,cx
+	add ax,0x2000
+	mov [disk_addr.dest_segment], ax
+
+	mov dl, [disk_n]
+	mov ah, 0x42
+	mov si, disk_addr
+	int 0x13
+	
+	mov si, error_fat_table
+	jc boot_halt
+
+	; update cache index entry
+	mov [fat_table_cache_index+ecx*4], ebx
+
+	pop eax
+
+	.noload:
+
+	; Finally, read from the FAT.
+	and eax,0x3FFF
+	
+	mov bx,0x2000
+	mov es,bx
+
+	mov eax,[es:eax*4]
+
+	and eax,0x0FFFFFFF
+
+	preserve_eax
+	popad
+	ret
+
+fat_cluster_base:
+	dd 0
+
+; eax = cluster
+; ebx = offset in io buffer -> ebx = new offset in io buffer
+fat_load_cluster:
+	pushad
+
+	sub eax,2
+	add eax, [fat_cluster_base]
+	mov [disk_addr.sector_index], eax
+
+	movzx eax, byte [fat_bpb.sectors_per_cluster]
+	mov [disk_addr.sector_count], ax
+	
+	mov ecx,ebx
+	shr cx,4
+	add cx,0x1000
+	mov [disk_addr.dest_segment], cx
+
+	mov dl, [disk_n]
+	mov ah, 0x42
+	mov si, disk_addr
+	int 0x13
+	
+	mov si, error_fat_cluster
+	jc boot_halt
+
+	imul eax, 512
+	add ebx, eax
+
+	preserve_ebx
+	popad
+	ret
+
+; eax = cluster -> cluster to continue at
+fat_read_file:
+	pushad
+
+	mov ebx, 0
+	
+	.read_loop:
+	call fat_load_cluster
+	call fat_next_cluster
+
+	cmp eax, 0xFFFFFF0
+	jge .eof
+	cmp eax, 1
+	jle .eof
+
+	cmp ebx, 0x10000
+	jl .read_loop
+	jg .overflow
+
+	preserve_eax
+	popad
+	ret
+
+	.eof:
+
+	mov eax, 0
+
+	preserve_eax
+	popad
+	ret
+
+	.overflow:
+	mov si, error_fat_overflow
+	jmp boot_halt
 
 
+error_fat_table:
+	db "Failed to load part of the FAT table.",0
+
+error_fat_cluster:
+	db "Failed to load a FAT cluster.",0
+
+error_fat_overflow:
+	db "The FAT read function overflowed its buffer. Whoops.",0
 
 hello:
-	db "Everything seems to be working! Yay~",0
+	db "Moonboot's work is done, for now.",0
 
 _gdt:
 	.null = $ - _gdt
@@ -266,15 +393,6 @@ _gdt:
 	db 0 ; access
 	db 0 ; flags, limit high ???
 	db 0 ; base, high
-
-	;.unreal = $ - _gdt
-	;dw 0xFFFF ; limit, low
-	;dw 0 ; base, low
-	;.unreal_base_middle:
-	;db 0x10 ; base, middle
-	;db 10010010b; access
-	;db 00000000b ; flags, limit high ???
-	;db 0 ; base, high
 
 	.code = $ - _gdt
 	dw 0 ; limit, low
@@ -299,18 +417,15 @@ _gdt:
 ; Fill disk to even number of sectors!
 times 512-(($-$$) mod 512) db 0
 
-; Determine sector count, get angry if too many!
+; Determine sector count
 stage2_sectors = (($-$$) / 512)-1
 
-display "Sectors in stage 2: "
+display "Sectors in second stage: "
 display_num stage2_sectors
 display 0x0a,0x0d
 
-if stage2_sectors>17
-	display "TOO MANY SECTORS IN STAGE 2!",0x0a,0x0d
-end if
-
-page_table = $
-if (page_table mod 0x1000) <> 0
-	display "PAGE TABLE NOT ALIGNED",0x0a,0x0d
-end if
+display "Max address: "
+display_num $
+display " / "
+display_num 0xFFFF
+display 0x0a,0x0d

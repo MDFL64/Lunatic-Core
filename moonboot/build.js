@@ -8,13 +8,15 @@ console.log("\n>> Building...");
 var asm_output = child_process.execFileSync("fasm",["moonboot.asm"]).toString();
 console.log(asm_output);
 
+if (process.argv[2]=="noflash") return;
+
 var bootloader_size = fs.statSync("moonboot.bin").size;
 if (bootloader_size % 512 != 0)
 	throw "Boot code is not an even number of sectors";
 bootloader_size /= 512;
 
 console.log(">> Locating destination drive...");
-var drive = child_process.execFileSync("wmic",["volume","get","deviceid,driveletter,label"]).toString().match(/([^\s]+)\s+([A-Z]:)\s+LUNATIC OS/);
+var drive = child_process.execFileSync("wmic",["volume","get","deviceid,driveletter,label"]).toString().match(/([^\s]+)\s+([A-Z]:)\s+LUNATIC/);
 if (drive==null)
 	throw "No drive.";
 
@@ -26,17 +28,26 @@ console.log("Using drive "+drive_letter+" -- "+drive_id+"\n");
 
 console.log(">> Reading old boot sector from drive, performing sanity checks...");
 
-var boot_sector = child_process.execFileSync("dd",["if="+drive_id,"count=1"],{stdio:["ignore", "pipe", "ignore"]});
+var boot_sector = child_process.execFileSync("dd",["if="+drive_id,"count=2"],{stdio:["ignore", "pipe", "ignore"]});
 
-if (boot_sector.length != 512)
+if (boot_sector.length != 1024)
 	throw "Failed to read whole boot sector.";
 
-// SANITY CHECK!
+// SANITY CHECKS!
 if (boot_sector.toString("ascii",0x52,0x5A) != "FAT32   ")
 	throw "Sanity check failed, not FAT32.";
 
 if (boot_sector.readInt16LE(0x0B) != 512)
 	throw "Sanity check failed, sector size is wrong.";
+
+if (boot_sector.readInt16LE(0x30) != 1)
+	throw "Sanity check failed, FSI is in the wrong sector.";
+
+if (boot_sector.readInt32LE(512) != 0x41615252)
+	throw "Sanity check failed, FSI signature #1 is wrong.";
+
+if (boot_sector.readInt32LE(512+484) != 0x61417272)
+	throw "Sanity check failed, FSI signature #2 is wrong.";
 
 var reserved_sectors = boot_sector.readInt16LE(0x0E);
 console.log("We will use "+bootloader_size+" / "+reserved_sectors+" reserved sectors.\n");
@@ -45,16 +56,16 @@ if (bootloader_size > reserved_sectors)
 
 console.log(">> Patching boot code...");
 
-var patch_sector = new Buffer(512);
+var patch_sector = new Buffer(1024);
 
 var fd = fs.openSync("moonboot.bin","r+");
-if (fs.readSync(fd, patch_sector, 0, 512, 0) != 512)
+if (fs.readSync(fd, patch_sector, 0, 1024, 0) != 1024)
 	throw "Failed to read moonboot.bin.";
 
-
 boot_sector.copy(patch_sector,3,3,90);
+boot_sector.copy(patch_sector,512,512,1024);
 
-if (fs.writeSync(fd, patch_sector, 0, 512, 0) != 512)
+if (fs.writeSync(fd, patch_sector, 0, 1024, 0) != 1024)
 	throw "Failed to write moonboot.bin.";
 
 fs.closeSync(fd);
