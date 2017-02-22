@@ -221,41 +221,17 @@ boot_stage2:
 	add eax, ebx
 	mov [fat_cluster_base], eax
 
-	; Read root directory
+	; Search root directory for lunatic directory
 	mov eax, [fat_bpb.root_cluster_n]
+	mov si, fname_lunatic
+	call fat_seek
+
+	; Search lunatic directory for init directory
+	mov si, fname_init
+	call fat_seek
+
+	; Read the directory, so we can see what's there.
 	call fat_read_file
-
-	; read the directory!
-	mov ax,0x1000
-	mov es,ax
-	xor eax,eax
-
-	.top:
-	
-	; end of directory
-	mov bl, [es:eax]
-	cmp bl, 0
-	je .done
-	
-	; empty entry
-	cmp bl, 0x05
-	je .skip
-	cmp bl, 0xE5
-	je .skip
-
-	; volume labels and LFNs
-	mov bl, [es:eax+0x0B]
-	test bl,0x08
-	jnz .skip
-
-	mov esi, eax
-	call print_filename
-
-	.skip:
-	add eax, 32
-	jmp .top
-
-	.done:
 
 	; Say hi
 	mov si, hello
@@ -363,18 +339,20 @@ fat_cluster_base:
 ; ebx = offset in io buffer -> ebx = new offset in io buffer
 fat_load_cluster:
 	pushad
+	movzx ecx, byte [fat_bpb.sectors_per_cluster]
+	; ecx = cluster size
 
 	sub eax,2
+	imul eax,ecx
 	add eax, [fat_cluster_base]
 	mov [disk_addr.sector_index], eax
 
-	movzx eax, byte [fat_bpb.sectors_per_cluster]
-	mov [disk_addr.sector_count], ax
+	mov [disk_addr.sector_count], cx
 	
-	mov ecx,ebx
-	shr cx,4
-	add cx,0x1000
-	mov [disk_addr.dest_segment], cx
+	mov eax,ebx
+	shr ax,4
+	add ax,0x1000
+	mov [disk_addr.dest_segment], ax
 
 	mov dl, [disk_n]
 	mov ah, 0x42
@@ -384,8 +362,8 @@ fat_load_cluster:
 	mov si, error_fat_cluster
 	jc boot_halt
 
-	imul eax, 512
-	add ebx, eax
+	imul ecx, 512
+	add ebx, ecx
 
 	preserve_ebx
 	popad
@@ -426,6 +404,62 @@ fat_read_file:
 	mov si, error_fat_overflow
 	jmp boot_halt
 
+; eax = cluster of the directory to search -> eax = cluster of file, zero if not found
+; si = 11 byte FAT file name
+; Note that this will fail for directorys larger than 64k. Should be easy to fix if there's ever a need...
+fat_seek:
+	pushad
+
+	call fat_read_file
+	; eax = cluster to continue @
+
+	; set up read segment and pointer
+	mov bx,0x1000
+	mov es,bx
+	xor edi,edi
+
+	.top:
+	
+	; end of directory
+	mov bl, [es:edi]
+	cmp bl, 0
+	je .fail
+	
+	; empty entry
+	cmp bl, 0x05
+	je .skip
+	cmp bl, 0xE5
+	je .skip
+
+	; volume labels and LFNs
+	mov bl, [es:edi+0x0B]
+	test bl,0x08
+	jnz .skip
+
+	mov ecx, 11
+	push esi
+	push edi
+	repe cmpsb
+	pop edi
+	pop esi
+
+	je .success
+
+	.skip:
+	add edi, 32
+	jmp .top
+
+	.success:
+	mov eax, [es:edi+0x14]
+	shl eax,16
+	or eax, [es:edi+0x1A]
+	preserve_eax
+	popad
+	ret
+
+	.fail:
+	mov si,error_fat_file_not_found
+	call boot_halt
 
 error_fat_table:
 	db "Failed to load part of the FAT table.",0
@@ -436,8 +470,16 @@ error_fat_cluster:
 error_fat_overflow:
 	db "The FAT read function overflowed its buffer. Whoops.",0
 
+error_fat_file_not_found:
+	db "Failed to find a file required to boot.",0
+
 hello:
 	db "Moonboot's work is done, for now.",0
+
+fname_lunatic:
+	db "LUNATIC    "
+fname_init:
+	db "INIT       "
 
 _gdt:
 	.null = $ - _gdt
