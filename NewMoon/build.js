@@ -5,12 +5,12 @@ var child_process = require("child_process");
 
 console.log("\n>> Building...");
 
-var asm_output = child_process.execFileSync("fasm",["moonboot.asm"]).toString();
+var asm_output = child_process.execFileSync("fasm",["NewMoon.asm"]).toString();
 console.log(asm_output);
 
 if (process.argv[2]=="noflash") return;
 
-var bootloader_size = fs.statSync("moonboot.bin").size;
+var bootloader_size = fs.statSync("NewMoon.bin").size;
 if (bootloader_size % 512 != 0)
 	throw "Boot code is not an even number of sectors";
 bootloader_size /= 512;
@@ -58,15 +58,15 @@ console.log(">> Patching boot code...");
 
 var patch_sector = new Buffer(1024);
 
-var fd = fs.openSync("moonboot.bin","r+");
+var fd = fs.openSync("NewMoon.bin","r+");
 if (fs.readSync(fd, patch_sector, 0, 1024, 0) != 1024)
-	throw "Failed to read moonboot.bin.";
+	throw "Failed to read NewMoon.bin.";
 
 boot_sector.copy(patch_sector,3,3,90);
 boot_sector.copy(patch_sector,512,512,1024);
 
 if (fs.writeSync(fd, patch_sector, 0, 1024, 0) != 1024)
-	throw "Failed to write moonboot.bin.";
+	throw "Failed to write NewMoon.bin.";
 
 fs.closeSync(fd);
 
@@ -81,7 +81,7 @@ console.log("Hold on!\n");
 setTimeout(function() {
 	console.log(">> Writing to drive...");
 
-	var out = child_process.execFileSync("dd",["if=moonboot.bin","of="+drive_id]).toString();
+	var out = child_process.execFileSync("dd",["if=NewMoon.bin","of="+drive_id]).toString();
 	console.log(out);
 
 	console.log(">> Remounting drive...");

@@ -145,7 +145,7 @@ error_disk_unsupported:
 error_disk_failed:
 	db "Failed to read sectors from disk.",0
 error_halt:
-	db 0x0a,0x0a,0x0d," - BOOT HALTED -",0
+	db 0x0a,0x0a,0x0d," - MOONBOOT HALTED -",0
 
 ; Fill out boot sector.
 bytes_left = 510-($-$$)
@@ -224,14 +224,16 @@ boot_stage2:
 	; Search root directory for lunatic directory
 	mov eax, [fat_bpb.root_cluster_n]
 	mov si, fname_lunatic
-	call fat_seek
+	call fat_find
 
 	; Search lunatic directory for init directory
 	mov si, fname_init
-	call fat_seek
+	call fat_find
 
-	; Read the directory, so we can see what's there.
-	call fat_read_file
+	; Index the init directory so the kernel can see what's there.
+	call fat_index_init_dir
+
+	call fat_load_init_files
 
 	; Say hi
 	mov si, hello
@@ -276,6 +278,8 @@ fat_table_cache_index:
 fat_next_cluster:
 	pushad
 	
+	and eax,0x0FFFFFFF
+
 	mov ebx,eax
 	shr ebx,7
 	; ebx = table sector
@@ -326,8 +330,6 @@ fat_next_cluster:
 
 	mov eax,[es:eax*4]
 
-	and eax,0x0FFFFFFF
-
 	preserve_eax
 	popad
 	ret
@@ -339,6 +341,9 @@ fat_cluster_base:
 ; ebx = offset in io buffer -> ebx = new offset in io buffer
 fat_load_cluster:
 	pushad
+
+	and eax,0x0FFFFFFF
+
 	movzx ecx, byte [fat_bpb.sectors_per_cluster]
 	; ecx = cluster size
 
@@ -407,9 +412,10 @@ fat_read_file:
 ; eax = cluster of the directory to search -> eax = cluster of file, zero if not found
 ; si = 11 byte FAT file name
 ; Note that this will fail for directorys larger than 64k. Should be easy to fix if there's ever a need...
-fat_seek:
+fat_find:
 	pushad
 
+	.next_cluster:
 	call fat_read_file
 	; eax = cluster to continue @
 
@@ -431,6 +437,10 @@ fat_seek:
 	cmp bl, 0xE5
 	je .skip
 
+	; dotfile
+	cmp bl, 0x2E
+	je .skip
+
 	; volume labels and LFNs
 	mov bl, [es:edi+0x0B]
 	test bl,0x08
@@ -447,12 +457,22 @@ fat_seek:
 
 	.skip:
 	add edi, 32
-	jmp .top
+	cmp edi,0x10000
+	jl .top
+	
+	; end of buffer reached
+
+	; make sure there's another cluster
+	test eax,eax
+	jz .fail
+
+	jmp .next_cluster
 
 	.success:
 	mov eax, [es:edi+0x14]
 	shl eax,16
-	or eax, [es:edi+0x1A]
+	movzx ebx, word [es:edi+0x1A]
+	or eax, ebx
 	preserve_eax
 	popad
 	ret
@@ -460,6 +480,115 @@ fat_seek:
 	.fail:
 	mov si,error_fat_file_not_found
 	call boot_halt
+
+
+; eax = cluster of directory to save
+fat_index_init_dir:
+	pushad
+
+	mov edx,0
+
+	.next_cluster:
+	call fat_read_file
+	; eax = cluster to continue @
+
+	; set up read segment and pointer
+	cli
+	mov bx,0x1000
+	mov ds,bx
+	mov bx,0x6000
+	mov es,bx
+	xor esi,esi
+	mov edi,md_segment.init_files
+
+
+	.top:
+	
+	; end of directory
+	mov bl, [ds:esi]
+	cmp bl, 0
+	je .done
+	
+	; empty entry
+	cmp bl, 0x05
+	je .skip
+	cmp bl, 0xE5
+	je .skip
+
+	; dotfile
+	cmp bl, 0x2E
+	je .skip
+
+	; volume labels and LFNs -AND- subdirectories
+	mov bl, [ds:esi+0x0B]
+	test bl,0x18
+	jnz .skip
+
+	; file size > 0
+	mov ebx, [ds:esi+0x1C]
+	test ebx,ebx
+	jz .skip
+
+	mov ecx, 11
+	push esi
+	rep movsb
+	pop esi
+	
+	; cluster
+	mov ebx, [ds:esi+0x14]
+	shl ebx,16
+	movzx ecx, word [ds:esi+0x1A]
+	or ebx, ecx
+	mov [es:edi],ebx ;GOOD
+	add edi,4
+
+	
+	; file size
+	mov ebx, [ds:esi+0x1C]
+	mov [es:edi],ebx
+	add edi,4
+
+	inc edx
+
+	.skip:
+	add esi, 32
+	cmp esi,0x10000
+	jl .top
+	
+	; end of buffer reached
+	; reset ds since we're either going to load more stuff, or fail
+	mov bx,0
+	mov ds,bx
+
+	; make sure there's another cluster
+	test eax,eax
+	jz .fail
+
+	jmp .next_cluster
+
+	.done:
+	mov bx,0
+	mov ds,bx
+
+	mov [es:md_segment.init_file_count],edx
+
+	popad
+	ret
+
+	.fail:
+	mov si,error_fat_index_init_dir
+	call boot_halt
+
+fat_load_init_files:
+	pushad
+	mov bx,0x6000
+	mov es,bx
+
+	mov eax,[es:md_segment.init_files+11]
+	call fat_read_file
+
+	popad
+	ret
 
 error_fat_table:
 	db "Failed to load part of the FAT table.",0
@@ -472,6 +601,9 @@ error_fat_overflow:
 
 error_fat_file_not_found:
 	db "Failed to find a file required to boot.",0
+
+error_fat_index_init_dir:
+	db "Failed to index init directory.",0
 
 hello:
 	db "Moonboot's work is done, for now.",0
@@ -525,3 +657,9 @@ display_num $
 display " / "
 display_num 0xFFFF
 display 0x0a,0x0d
+
+virtual at 0
+md_segment:
+	.init_file_count: dd 0
+	.init_files:
+end virtual

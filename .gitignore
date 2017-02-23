@@ -1,1 +1,4 @@
-moonboot.bin
+*.bin
+*.filters
+*.db
+*/.vs/*
