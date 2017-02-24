@@ -1,3 +1,11 @@
+virtual at 0
+kernel_info_table:
+	.mem_low: dd 0
+	.mem_high: dd 0
+	.init_file_count: dd 0
+	.init_files:
+end virtual
+
 ; a macro I stole off the FASM forum and edited
 macro display_num num 
 {
@@ -29,10 +37,6 @@ macro preserve_ebx {
 	mov [esp+16],ebx
 }
 
-; This is the boot sector.
-; All we really want to do here is load the rest of the boot code!
-; Assume a 1.44mb floppy. 80 tracks, 18 sectors, 2 heads
-
 use16
 org 0x7c00
 fat_bpb:
@@ -48,6 +52,8 @@ fat_bpb:
 	nop
 	rb 87 ; We patch this in later using our build script.
 
+; This is the boot sector.
+; We check a bunch of stuff, then load the rest of the boot code.
 boot_stage1:
 
 	; store boot disk
@@ -158,7 +164,64 @@ db 055h, 0AAh
 fat_fsi:
 	rb 512
 
+; This is stage two. We do a few things here:
+; [TODO] Check the memory map, halt if it looks wonky, and save the amount of memory to the KIT.
+; - Set up page tables.
+; - Get ready for long mode.
+; - Load files that the kernel needs to initialize.
+; [LATER] Select a video mode.
+; - Jump to stage 3.
 boot_stage2:
+	; get memory map
+	
+	mov bx, 0x6000
+	mov fs, bx
+	mov ebx, 0
+	mov es, bx
+	mov di, mmap_buffer
+
+	mov [fs:kernel_info_table.mem_low], ebx
+	mov [fs:kernel_info_table.mem_high], ebx
+
+	.mmap_loop:
+	mov eax, 0x0000E820
+	mov edx, 0x534D4150
+	mov ecx, 20
+	int 0x15
+	mov si, error_mmap_failed
+	jc boot_halt
+
+	mov eax, [mmap_buffer.type]
+	cmp eax, 1
+	jne .mmap_skip
+
+	mov eax, [mmap_buffer.base_low]
+	mov ecx, [mmap_buffer.size_low]
+
+	add ecx,eax
+
+	mov eax, [mmap_buffer.base_high]
+	mov edx, [mmap_buffer.size_high]
+
+	adc edx, eax
+
+	; ecx = low
+	; edx = high
+
+	cmp edx, [fs:kernel_info_table.mem_high]
+	jb .mmap_skip
+	ja .mmap_write
+
+	cmp ecx, [fs:kernel_info_table.mem_low]
+	jb .mmap_skip
+
+	.mmap_write:
+	mov [fs:kernel_info_table.mem_low], ecx
+	mov [fs:kernel_info_table.mem_high], edx
+
+	.mmap_skip:
+	cmp ebx, 0
+	jne .mmap_loop
 
 	; set up page tables
 	mov bx, 0x7000
@@ -171,7 +234,7 @@ boot_stage2:
 	mov [es:bx], eax
 	add bx, 4
 	cmp bx, 0x3000
-	jl .zero_pages
+	jb .zero_pages
 
 	; root points to 512*512 gig (256 tb) -> only ever fill first entry, mark rest as non-existant
 	mov bx, 0
@@ -191,7 +254,7 @@ boot_stage2:
 	add bx, 8
 	add eax, 0x00200000
 	cmp bx, 0x3000
-	jl .fill_table
+	jb .fill_table
 	
 	; tell the processor where the page table is
 	mov eax, 0x70000
@@ -230,40 +293,14 @@ boot_stage2:
 
 	call fat_load_init_files
 
-	; Say hi
-	mov si, hello
-	call print_str
+	jmp boot_stage3
 
-	@@:
-	jmp @b
-
-print_filename:
-	pushad
-
-	mov ah,0x0e
-	mov bh,0
-
-	mov cx,si
-	add cx,11
-
-	.top:
-	mov al,[es:si]
-	cmp si,cx
-	jge .end
-	
-	int 0x10
-	inc si
-	jmp .top
-	
-	.end:
-	mov al,0x0a
-	int 0x10
-
-	mov al,0x0d
-	int 0x10
-
-	popad
-	ret
+mmap_buffer:
+	.base_low: dd 0
+	.base_high: dd 0
+	.size_low: dd 0
+	.size_high: dd 0
+	.type: dd 0
 
 fat_table_cache_index:
 	dd 1 ; set 1st index to an invalid value
@@ -380,13 +417,13 @@ fat_read_file:
 	call fat_next_cluster
 
 	cmp eax, 0xFFFFFF0
-	jge .eof
+	jae .eof
 	cmp eax, 1
-	jle .eof
+	jbe .eof
 
 	cmp ebx, 0x10000
-	jl .read_loop
-	jg .overflow
+	jb .read_loop
+	ja .overflow
 
 	preserve_eax
 	popad
@@ -453,7 +490,7 @@ fat_find:
 	.skip:
 	add edi, 32
 	cmp edi,0x10000
-	jl .top
+	jb .top
 	
 	; end of buffer reached
 
@@ -494,7 +531,7 @@ fat_index_init_dir:
 	mov bx,0x6000
 	mov es,bx
 	xor esi,esi
-	mov edi,info_segment.init_files
+	mov edi,kernel_info_table.init_files
 
 
 	.top:
@@ -548,7 +585,7 @@ fat_index_init_dir:
 	.skip:
 	add esi, 32
 	cmp esi,0x10000
-	jl .top
+	jb .top
 	
 	; end of buffer reached
 	; reset ds since we're either going to load more stuff, or fail
@@ -565,7 +602,7 @@ fat_index_init_dir:
 	mov bx,0
 	mov ds,bx
 
-	mov [es:info_segment.init_file_count],edx
+	mov [es:kernel_info_table.init_file_count],edx
 
 	popad
 	ret
@@ -585,8 +622,8 @@ fat_load_init_files:
 	mov es,bx
 
 	xor eax,eax
-	mov esi, info_segment.init_files+15
-	mov ecx, [es:info_segment.init_file_count]
+	mov esi, kernel_info_table.init_files+15
+	mov ecx, [es:kernel_info_table.init_file_count]
 	.count_size:
 	
 	add eax, [es:esi]
@@ -594,11 +631,11 @@ fat_load_init_files:
 	loop .count_size
 
 	cmp eax,0xE00000
-	jg .fail
+	ja .fail
 
 	; actually load stuff
-	mov esi, info_segment.init_files+11
-	mov ecx, [es:info_segment.init_file_count]
+	mov esi, kernel_info_table.init_files+11
+	mov ecx, [es:kernel_info_table.init_file_count]
 
 	.next_file:
 	; reset the segment just to be safe
@@ -637,21 +674,34 @@ fat_load_init_files:
 
 fat_relocate_init_data:
 	pushad
-	
-	mov eax, 0xDEADBEEF
 
 	call enter_long
 	use64
 
-	; actually do stuff
-	mov rbx,"A B C D "
-	mov [0xB8000],rbx
+	; clear registers used by copy instruction
+	xor rcx,rcx
+	xor rsi,rsi
+	xor rdi,rdi
+
+	; ecx = bytes to copy
+	mov ecx,ebx
+	cmp ecx, 0x10000
+	jbe .not_too_big
+	mov ecx, 0x10000
+	.not_too_big:
+
+	; ebx = bytes left
+	sub ebx, ecx
+	mov esi, 0x10000
+	mov edi, [fat_init_write_head]
+
+	; copy!
+	rep movsb
+
+	mov [fat_init_write_head], edi
 
 	call enter_real
 	use16
-
-	mov si,rerr
-	call print_str
 
 	popad
 	ret
@@ -689,6 +739,7 @@ enter_long:
 	; DATA
 	mov ax,_gdt.data
 	mov ds,ax
+	mov es,ax
 	; STACK
 	mov ss,ax
 	add esp,0x50000
@@ -708,6 +759,7 @@ enter_real:
 	; DATA
 	mov ax,_gdt.data16
 	mov ds,ax
+	mov es,ax
 	; STACK [NOW BROKEN]
 	mov ss,ax
 
@@ -723,6 +775,7 @@ enter_real:
 	; DATA
 	mov ax,0
 	mov ds,ax
+	mov es,ax
 	; STACK
 	mov ax,0x5000
 	mov ss,ax
@@ -739,6 +792,9 @@ enter_real:
 	.temp_addr:
 	dw .switch_temp
 	dw _gdt.code16
+
+error_mmap_failed:
+	db "Failed to fetch memory information.",0
 
 error_fat_table:
 	db "Failed to load part of the FAT table.",0
@@ -757,15 +813,6 @@ error_fat_index_init_dir:
 
 error_fat_init_toobig:
 	db "Failed to load init files, not enough room.",0
-
-hello:
-	db "Moonboot's work is done, for now.",0
-
-rerr:
-	db "> I'm supposed to be relocating a cluster! RERR!",0x0a,0x0d,0
-
-rerr2:
-	db "> Wew lad!",0x0a,0x0d,0	
 
 fname_lunatic:
 	db "LUNATIC    "
@@ -817,6 +864,15 @@ _gdt:
 	dw $ - _gdt - 1 ; length
 	dq _gdt
 
+; Stage 3 runs entirely in long mode.
+; It has one job: Relocate and launch the kernel!
+boot_stage3:
+	call enter_long
+	use64
+	mov rax, "A/B/C/D/"
+	mov [0xB8000], rax
+	hlt
+
 ; Fill disk to even number of sectors!
 times 512-(($-$$) mod 512) db 0
 
@@ -832,9 +888,3 @@ display_num $
 display " / "
 display_num 0xFFFF
 display 0x0a,0x0d
-
-virtual at 0
-info_segment:
-	.init_file_count: dd 0
-	.init_files:
-end virtual

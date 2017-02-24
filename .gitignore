@@ -1,4 +1,6 @@
 *.bin
 *.filters
+FullMoon/bin/**
 *.db
+*.opendb
 */.vs/*
