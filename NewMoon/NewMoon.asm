@@ -133,8 +133,6 @@ disk_addr:
 	.sector_index:
 	dq 1
 
-; we should be safe pushing text over the partition table.
-
 error_longmode:
 	db "Your processor does not support long mode.",0x0a,0x0d
 	db "If you're using a virtual machine, it may be configured incorrectly.",0
@@ -161,9 +159,6 @@ fat_fsi:
 	rb 512
 
 boot_stage2:
-
-	; load gdt
-	lgdt [_gdt.ptr]
 
 	; set up page tables
 	mov bx, 0x7000
@@ -239,8 +234,8 @@ boot_stage2:
 	mov si, hello
 	call print_str
 
-	cli
-	hlt
+	@@:
+	jmp @b
 
 print_filename:
 	pushad
@@ -499,7 +494,7 @@ fat_index_init_dir:
 	mov bx,0x6000
 	mov es,bx
 	xor esi,esi
-	mov edi,md_segment.init_files
+	mov edi,info_segment.init_files
 
 
 	.top:
@@ -570,7 +565,7 @@ fat_index_init_dir:
 	mov bx,0
 	mov ds,bx
 
-	mov [es:md_segment.init_file_count],edx
+	mov [es:info_segment.init_file_count],edx
 
 	popad
 	ret
@@ -579,16 +574,171 @@ fat_index_init_dir:
 	mov si,error_fat_index_init_dir
 	call boot_halt
 
+fat_init_write_head:
+	dd 0x100000
+
 fat_load_init_files:
 	pushad
+
+	; reset segment
 	mov bx,0x6000
 	mov es,bx
 
-	mov eax,[es:md_segment.init_files+11]
+	xor eax,eax
+	mov esi, info_segment.init_files+15
+	mov ecx, [es:info_segment.init_file_count]
+	.count_size:
+	
+	add eax, [es:esi]
+	add esi, 19
+	loop .count_size
+
+	cmp eax,0xE00000
+	jg .fail
+
+	; actually load stuff
+	mov esi, info_segment.init_files+11
+	mov ecx, [es:info_segment.init_file_count]
+
+	.next_file:
+	; reset the segment just to be safe
+	mov bx,0x6000
+	mov es,bx
+
+	; Read cluster id, write back memory address loaded to
+	mov eax, [es:esi]
+	mov ebx, [fat_init_write_head]
+	mov [es:esi], ebx
+
+	mov ebx, [es:esi+4]
+
+	; eax = cluster
+	; ebx = size
+
+	.next_cluster:
 	call fat_read_file
+
+	call fat_relocate_init_data
+
+	test eax,eax
+	jnz .next_cluster
+
+	add esi, 19
+	loop .next_file
 
 	popad
 	ret
+
+	.fail:
+	mov si,error_fat_init_toobig
+	call boot_halt
+
+; ebx = file size remaining -> file size remaining after copy
+
+fat_relocate_init_data:
+	pushad
+	
+	mov eax, 0xDEADBEEF
+
+	call enter_long
+	use64
+
+	; actually do stuff
+	mov rbx,"A B C D "
+	mov [0xB8000],rbx
+
+	call enter_real
+	use16
+
+	mov si,rerr
+	call print_str
+
+	popad
+	ret
+
+enter_temp_var:
+	dd 0
+
+; switch to long mode... very carefully
+enter_long:
+	cli
+
+	mov [enter_temp_var],eax
+
+	; extend the return address
+	pop ax
+	shl eax, 16
+	push ax
+	push ax
+	push ax
+	shr eax, 16
+	push ax
+
+	; enable protected mode, paging
+	mov eax, cr0
+	or eax, 0x80000001
+	mov cr0, eax
+
+	; load our gdt
+	lgdt [_gdt.ptr]
+
+	; CODE
+	jmp _gdt.code:.switch_long
+	.switch_long:
+	use64
+	; DATA
+	mov ax,_gdt.data
+	mov ds,ax
+	; STACK
+	mov ss,ax
+	add esp,0x50000
+	
+	mov eax, [enter_temp_var]
+	ret
+
+; switch to real mode... even more carefully
+enter_real:
+	mov [enter_temp_var],eax
+
+	; switch to temp mode
+	; CODE
+	jmp far dword [.temp_addr]
+	.switch_temp:
+	use16
+	; DATA
+	mov ax,_gdt.data16
+	mov ds,ax
+	; STACK [NOW BROKEN]
+	mov ss,ax
+
+	; disable protected mode, paging
+	mov eax, cr0
+	and eax,0x7FFFFFFE
+	mov cr0, eax
+
+	; fix segments for good
+	; CODE
+	jmp 0:.switch_real
+	.switch_real:
+	; DATA
+	mov ax,0
+	mov ds,ax
+	; STACK
+	mov ax,0x5000
+	mov ss,ax
+	sub esp, 0x50000
+
+	; shorten return address
+	pop ax
+	add esp,6
+	push ax
+
+	mov eax, [enter_temp_var]
+	ret
+
+	.temp_addr:
+	dw .switch_temp
+	dw _gdt.code16
 
 error_fat_table:
 	db "Failed to load part of the FAT table.",0
@@ -605,8 +755,17 @@ error_fat_file_not_found:
 error_fat_index_init_dir:
 	db "Failed to index init directory.",0
 
+error_fat_init_toobig:
+	db "Failed to load init files, not enough room.",0
+
 hello:
 	db "Moonboot's work is done, for now.",0
+
+rerr:
+	db "> I'm supposed to be relocating a cluster! RERR!",0x0a,0x0d,0
+
+rerr2:
+	db "> Wew lad!",0x0a,0x0d,0	
 
 fname_lunatic:
 	db "LUNATIC    "
@@ -623,7 +782,7 @@ _gdt:
 	db 0 ; base, high
 
 	.code = $ - _gdt
-	dw 0 ; limit, low
+	dw 0x0000 ; limit, low
 	dw 0 ; base, low
 	db 0 ; base, middle
 	db 10011010b; access
@@ -631,16 +790,32 @@ _gdt:
 	db 0 ; base, high
 
 	.data = $ - _gdt
-	dw 0 ; limit, low
+	dw 0x0000 ; limit, low
 	dw 0 ; base, low
 	db 0 ; base, middle
 	db 10010010b; access
 	db 00100000b ; flags, limit high ???
 	db 0 ; base, high
 
+	.code16 = $ - _gdt
+	dw 0xFFFF ; limit, low
+	dw 0 ; base, low
+	db 0 ; base, middle
+	db 10011010b; access
+	db 00000000b ; flags, limit high ???
+	db 0 ; base, high
+
+	.data16 = $ - _gdt
+	dw 0xFFFF ; limit, low
+	dw 0 ; base, low
+	db 0 ; base, middle
+	db 10010010b; access
+	db 00000000b ; flags, limit high ???
+	db 0 ; base, high
+
 	.ptr:
-	dw $ - _gdt - 1 ; single entry
-	dd _gdt
+	dw $ - _gdt - 1 ; length
+	dq _gdt
 
 ; Fill disk to even number of sectors!
 times 512-(($-$$) mod 512) db 0
@@ -659,7 +834,7 @@ display_num 0xFFFF
 display 0x0a,0x0d
 
 virtual at 0
-md_segment:
+info_segment:
 	.init_file_count: dd 0
 	.init_files:
 end virtual
