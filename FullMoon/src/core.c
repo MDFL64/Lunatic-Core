@@ -1,15 +1,13 @@
 //#include <intrun.h>
 
-void main() {
-	int x = 0xBEEF;
-	int y = 0x1234;
-	int z = x + y;
+__int8* rawmem = 0;
 
-	//__int32* a = 0;
-	//__int32* b = 4;
-	int a = *(int*)0;
-	int b = *(int*)4;
-	int c = *(int*)7;
+void main() {
+
+	rawmem[0xB8000] = 'A';
+	rawmem[0xB8002] = 'd';
+	rawmem[0xB8004] = 'a';
+	rawmem[0xB8006] = 'm';
 
 	__halt();
 	//printf("xyzzy");

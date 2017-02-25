@@ -141,7 +141,7 @@ disk_addr:
 
 error_longmode:
 	db "Your processor does not support long mode.",0x0a,0x0d
-	db "If you're using a virtual machine, it may be configured incorrectly.",0
+	db "If you're using a VM, it may be configured wrong.",0
 error_a20:
 	db "Failed to fix A20 line.",0
 error_disk_unsupported:
@@ -149,7 +149,7 @@ error_disk_unsupported:
 error_disk_failed:
 	db "Failed to read sectors from disk.",0
 error_halt:
-	db 0x0a,0x0a,0x0d," - MOONBOOT HALTED -",0
+	db 0x0a,0x0a,0x0d," - NEWMOON BOOTLOADER HALTED -",0
 
 ; Fill out boot sector.
 bytes_left = 510-($-$$)
@@ -165,15 +165,58 @@ fat_fsi:
 	rb 512
 
 ; This is stage two. We do a few things here:
-; [TODO] Check the memory map, halt if it looks wonky, and save the amount of memory to the KIT.
+; - Check the amount of memory.
 ; - Set up page tables.
 ; - Get ready for long mode.
 ; - Load files that the kernel needs to initialize.
 ; [LATER] Select a video mode.
 ; - Jump to stage 3.
 boot_stage2:
-	; get memory map
-	
+
+	call fetch_mmap
+
+	call setup_pagetable
+
+	; enable long mode
+	mov ecx, 0xc0000080
+	rdmsr
+	or eax, 0x100
+	wrmsr
+
+	; Calculate FAT cluster base.
+	mov eax, [fat_bpb.sectors_per_fat]
+	movzx ebx, byte [fat_bpb.fat_count]
+	imul eax, ebx
+	movzx ebx, word [fat_bpb.reserved_sectors]
+	add eax, ebx
+	mov [fat_cluster_base], eax
+
+	; Search root directory for lunatic directory
+	mov eax, [fat_bpb.root_cluster_n]
+	mov si, fname_lunatic
+	call fat_find
+
+	; Search lunatic directory for init directory
+	mov si, fname_init
+	call fat_find
+
+	; Index the init directory so the kernel can see what's there.
+	call fat_index_init_dir
+
+	call fat_load_init_files
+
+	jmp boot_stage3
+
+mmap_buffer:
+	.base_low: dd 0
+	.base_high: dd 0
+	.size_low: dd 0
+	.size_high: dd 0
+	.type: dd 0
+
+fetch_mmap:
+	pushad
+
 	mov bx, 0x6000
 	mov fs, bx
 	mov ebx, 0
@@ -223,7 +266,12 @@ boot_stage2:
 	cmp ebx, 0
 	jne .mmap_loop
 
-	; set up page tables
+	popad
+	ret
+
+setup_pagetable:
+	pushad
+
 	mov bx, 0x7000
 	mov es, bx
 	
@@ -265,42 +313,9 @@ boot_stage2:
 	or eax, 0x20
 	mov cr4, eax
 
-	; enable long mode
-	mov ecx, 0xc0000080
-	rdmsr
-	or eax, 0x100
-	wrmsr
+	popad
+	ret
 
-	; Calculate FAT cluster base.
-	mov eax, [fat_bpb.sectors_per_fat]
-	movzx ebx, byte [fat_bpb.fat_count]
-	imul eax, ebx
-	movzx ebx, word [fat_bpb.reserved_sectors]
-	add eax, ebx
-	mov [fat_cluster_base], eax
-
-	; Search root directory for lunatic directory
-	mov eax, [fat_bpb.root_cluster_n]
-	mov si, fname_lunatic
-	call fat_find
-
-	; Search lunatic directory for init directory
-	mov si, fname_init
-	call fat_find
-
-	; Index the init directory so the kernel can see what's there.
-	call fat_index_init_dir
-
-	call fat_load_init_files
-
-	jmp boot_stage3
-
-mmap_buffer:
-	.base_low: dd 0
-	.base_high: dd 0
-	.size_low: dd 0
-	.size_high: dd 0
-	.type: dd 0
 
 fat_table_cache_index:
 	dd 1 ; set 1st index to an invalid value
@@ -869,9 +884,93 @@ _gdt:
 boot_stage3:
 	call enter_long
 	use64
-	mov rax, "A/B/C/D/"
+	mov rax, "M a t t "
 	mov [0xB8000], rax
+	mov rax, "  i s   "
+	mov [0xB8008], rax
+	mov rax, "a   N e "
+	mov [0xB8010], rax
+	mov rax, "r d ! ! "
+	mov [0xB8018], rax
+
+	xor rcx, rcx
+	mov ecx, [kernel_info_table.init_file_count+0x60000]
+	mov rsi, kernel_info_table.init_files+0x60000
+	mov rbx, "MOONCORE"
+	mov edx, "EKRN"
+	
+	find_kernel_loop:
+	mov rax, [rsi]
+	cmp rax, rbx
+	jne find_kernel_skip
+
+	mov eax, [rsi+7]
+	cmp eax, edx
+	je find_kernel_end
+
+	find_kernel_skip:
+	add rsi, 19
+	loop find_kernel_loop
+
+	mov si, error_kernel_missing
+	jmp long_halt
+
+	find_kernel_end:
+	mov eax, [rsi+11]
+	mov ebx, [rsi+15]
+
+	mov si, error_kernel_invalid
+
+	mov bx, [eax]
+	cmp bx, 0x5A4D
+	jne long_halt
+
+	add eax, [eax+0x3C]
+	mov ebx, [eax]
+	cmp ebx, 0x00004550
+	jne long_halt
+	; eax = start of PE header
+
+	; check extended header size
+	mov bx, [eax+0x14]
+	cmp bx, 0x77
+	jb long_halt
+
+	; check 64 bit
+	mov bx, [eax+0x18]
+	cmp bx, 0x020B
+	mov si, error_kernel_32
+	jne long_halt
+
+	mov eax, [eax+0x28]
+
 	hlt
+
+kernel_source:
+	dd 0
+kernel_size: ; not sure I even need this...
+	dd 0
+
+
+
+
+
+
+
+; drop back into real mode, maybe reset graphics mode, print message
+long_halt:
+	call enter_real
+	use16
+	jmp boot_halt
+
+error_kernel_missing:
+	db "Failed to find kernel in init files.",0
+
+error_kernel_invalid:
+	db "The kernel is not valid.",0
+
+error_kernel_32:
+	db "A 32 bit kernel was supplied. Only 64 bit kernels are supported.",0
 
 ; Fill disk to even number of sectors!
 times 512-(($-$$) mod 512) db 0
