@@ -1,14 +1,18 @@
-//#include <intrun.h>
+__int8* video_memory = 0xB8000;
 
-__int8* rawmem = 0;
+const char* hello = "Kernel here. Hi! This took way too much effort.";
+
+void print(const char* str) {
+	int i = 0;
+	while (str[i]) {
+		video_memory[i * 2] = str[i];
+		i++;
+	}
+}
 
 void main() {
 
-	rawmem[0xB8000] = 'A';
-	rawmem[0xB8002] = 'd';
-	rawmem[0xB8004] = 'a';
-	rawmem[0xB8006] = 'm';
+	print(hello);
 
 	__halt();
-	//printf("xyzzy");
 }

@@ -100,8 +100,7 @@
       <ErrorReporting />
     </ClCompile>
     <Link>
-      <SubSystem>
-      </SubSystem>
+      <SubSystem>Native</SubSystem>
       <EnableCOMDATFolding>
       </EnableCOMDATFolding>
       <OptimizeReferences>

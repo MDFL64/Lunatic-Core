@@ -884,14 +884,6 @@ _gdt:
 boot_stage3:
 	call enter_long
 	use64
-	mov rax, "M a t t "
-	mov [0xB8000], rax
-	mov rax, "  i s   "
-	mov [0xB8008], rax
-	mov rax, "a   N e "
-	mov [0xB8010], rax
-	mov rax, "r d ! ! "
-	mov [0xB8018], rax
 
 	xor rcx, rcx
 	mov ecx, [kernel_info_table.init_file_count+0x60000]
@@ -916,8 +908,9 @@ boot_stage3:
 	jmp long_halt
 
 	find_kernel_end:
-	mov eax, [rsi+11]
-	mov ebx, [rsi+15]
+	xor rax,rax
+	mov eax, [rsi+11] ; kernel loc
+	;mov ebx, [rsi+15]
 
 	mov si, error_kernel_invalid
 
@@ -925,6 +918,7 @@ boot_stage3:
 	cmp bx, 0x5A4D
 	jne long_halt
 
+	push rax
 	add eax, [eax+0x3C]
 	mov ebx, [eax]
 	cmp ebx, 0x00004550
@@ -933,18 +927,74 @@ boot_stage3:
 
 	; check extended header size
 	mov bx, [eax+0x14]
-	cmp bx, 0x77
+	cmp bx, 0xf0
 	jb long_halt
 
 	; check 64 bit
-	mov bx, [eax+0x18]
-	cmp bx, 0x020B
+	mov cx, [eax+0x18]
+	cmp cx, 0x020B
 	mov si, error_kernel_32
 	jne long_halt
 
-	mov eax, [eax+0x28]
+	; check subsystem
+	mov cx, [eax+0x5C]
+	cmp cx, 1
+	mov si, error_kernel_not_native
+	jne long_halt
 
-	hlt
+	movzx edx, bx
+	add edx, eax
+	add edx, 0x18
+	
+	xor rbx,rbx
+	mov ebx, [eax+0x30]
+	cmp ebx,0x1000000
+	mov si, error_kernel_bad_offset
+	jne long_halt
+
+	; grab entry point
+	xor r11,r11
+	mov r11d, [eax+0x28]
+	add r11d, ebx
+
+	xor rcx, rcx
+	mov cx, [eax+0x06]
+
+	pop rax
+
+	xor r8,r8
+	xor r9,r9
+	xor r10,r10
+	.section_loop:
+	; eax = source base
+	; ebx = dest base
+	; ecx = sections left
+	; edx = current section base
+	
+	;mov r?, [edx] ; section name [meh]
+	mov r8d, [edx+0x14] ; source offset = 400?
+	mov r9d, [edx+0x0C] ; dest offset = 1000
+	mov r10d, [edx+0x10] ; size = 200
+
+	mov rsi, rax
+	add rsi, r8
+	mov rdi, rbx
+	add rdi, r9
+	push rcx
+	mov rcx, r10
+
+	rep movsb
+
+	pop rcx
+	
+	add edx,40
+	loop .section_loop
+
+	;mov ebx, [eax+0x2C] ; offset from overall base to code
+	;mov ecx, [eax+0x30] ; overall base
+	;mov eax, [eax+0x28] ; offset from overall base to entry
+
+	jmp r11
 
 kernel_source:
 	dd 0
@@ -964,13 +1014,19 @@ long_halt:
 	jmp boot_halt
 
 error_kernel_missing:
-	db "Failed to find kernel in init files.",0
+	db "Failed to locate kernel.",0
 
 error_kernel_invalid:
-	db "The kernel is not valid.",0
+	db "The supplied kernel is invalid.",0
 
 error_kernel_32:
 	db "A 32 bit kernel was supplied. Only 64 bit kernels are supported.",0
+
+error_kernel_not_native:
+	db "The kernel is a non-native PE.",0
+
+error_kernel_bad_offset:
+	db "The kernel does not want to be loaded in the correct place.",0
 
 ; Fill disk to even number of sectors!
 times 512-(($-$$) mod 512) db 0
