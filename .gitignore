@@ -3,4 +3,5 @@
 FullMoon/bin/**
 *.db
 *.opendb
+*.sdf
 */.vs/*

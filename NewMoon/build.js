@@ -20,7 +20,7 @@ var drive = child_process.execFileSync("wmic",["volume","get","deviceid,drivelet
 if (drive==null)
 	throw "No drive.";
 
-var drive_id_original = drive[1]
+var drive_id_original = drive[1];
 var drive_id = drive_id_original.replace("?",".").slice(0,-1);
 var drive_letter = drive[2];
 

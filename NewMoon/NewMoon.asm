@@ -53,29 +53,21 @@ fat_bpb:
 	rb 87 ; We patch this in later using our build script.
 
 ; This is the boot sector.
-; We check a bunch of stuff, then load the rest of the boot code.
+; We only really load the rest of the boot code.
 boot_stage1:
 
 	; store boot disk
 	mov [disk_n],dl
+
+	; make sure the video mode is what we want
+	mov ax, 3
+	int 0x10
 
 	; relocate stack
 	mov ax,0x5000
 	mov ss,ax
 	mov esp,0xFFF0
 	mov ebp,esp
-	
-	; check 64 bit support
-	mov eax, 0x80000001
-	cpuid
-	test edx,0x20000000
-
-	mov si, error_longmode
-	jz boot_halt
-
-	; enable A20 line
-	mov ax, 0x2401
-	int 0x15
 	
 	mov si, error_a20
 	jc boot_halt
@@ -139,11 +131,6 @@ disk_addr:
 	.sector_index:
 	dq 1
 
-error_longmode:
-	db "Your processor does not support long mode.",0x0a,0x0d
-	db "If you're using a VM, it may be configured wrong.",0
-error_a20:
-	db "Failed to fix A20 line.",0
 error_disk_unsupported:
 	db "Can't read sectors from disk.",0
 error_disk_failed:
@@ -169,9 +156,21 @@ fat_fsi:
 ; - Set up page tables.
 ; - Get ready for long mode.
 ; - Load files that the kernel needs to initialize.
-; [LATER] Select a video mode.
+; - Select a video mode.
 ; - Jump to stage 3.
 boot_stage2:
+
+	; check 64 bit support
+	mov eax, 0x80000001
+	cpuid
+	test edx,0x20000000
+
+	mov si, error_longmode
+	jz boot_halt
+
+	; enable A20 line
+	mov ax, 0x2401
+	int 0x15
 
 	call fetch_mmap
 
@@ -808,21 +807,21 @@ enter_real:
 	dw .switch_temp
 	dw _gdt.code16
 
+error_longmode:
+	db "Your processor does not support long mode.",0x0a,0x0d
+	db "If you're using a VM, it may be configured wrong.",0
+error_a20:
+	db "Failed to fix A20 line.",0
 error_mmap_failed:
 	db "Failed to fetch memory information.",0
-
 error_fat_table:
 	db "Failed to load part of the FAT table.",0
-
 error_fat_cluster:
 	db "Failed to load a FAT cluster.",0
-
 error_fat_overflow:
 	db "The FAT read function overflowed its buffer. Whoops.",0
-
 error_fat_file_not_found:
 	db "Failed to find a file required to boot.",0
-
 error_fat_index_init_dir:
 	db "Failed to index init directory.",0
 
@@ -888,8 +887,8 @@ boot_stage3:
 	xor rcx, rcx
 	mov ecx, [kernel_info_table.init_file_count+0x60000]
 	mov rsi, kernel_info_table.init_files+0x60000
-	mov rbx, "MOONCORE"
-	mov edx, "EKRN"
+	mov rbx, "FULLMOON"
+	mov edx, "NKRN"
 	
 	find_kernel_loop:
 	mov rax, [rsi]

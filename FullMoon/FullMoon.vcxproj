@@ -44,7 +44,7 @@
     <GenerateManifest />
     <OutDir>bin/</OutDir>
     <IntDir>$(OutDir)</IntDir>
-    <TargetName>MoonCore</TargetName>
+    <TargetName>FullMoon</TargetName>
     <TargetExt>.krn</TargetExt>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -147,9 +147,12 @@
     <ProjectReference>
       <UseLibraryDependencyInputs />
     </ProjectReference>
+    <PostBuildEvent>
+      <Command>node install_kernel.js</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\core.c" />
+    <ClCompile Include="src\start.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
