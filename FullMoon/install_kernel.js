@@ -7,5 +7,7 @@ if (drive==null)
 
 var drive_letter = drive[2];
 
+console.log(">> Copying...");
 child_process.execFileSync("xcopy",["bin\\FullMoon.krn",drive_letter+"\\Lunatic\\init\\","/Y"]);
+
 console.log(">> Done!");
