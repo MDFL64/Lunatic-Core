@@ -1,0 +1,1 @@
+#define errno 0
