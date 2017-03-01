@@ -1,0 +1,1 @@
+#define HUGE_VAL ((double)0x7ff0000000000000)

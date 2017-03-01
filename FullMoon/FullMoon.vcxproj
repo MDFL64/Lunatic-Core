@@ -67,7 +67,7 @@
       <FavorSizeOrSpeed />
       <EnableFiberSafeOptimizations />
       <WholeProgramOptimization />
-      <UndefineAllPreprocessorDefinitions />
+      <UndefineAllPreprocessorDefinitions>true</UndefineAllPreprocessorDefinitions>
       <IgnoreStandardIncludePath />
       <PreprocessToFile />
       <PreprocessSuppressLineNumbers />
@@ -78,7 +78,7 @@
       <BasicRuntimeChecks />
       <RuntimeLibrary />
       <StructMemberAlignment />
-      <BufferSecurityCheck />
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableEnhancedInstructionSet />
       <FloatingPointModel />
       <DisableLanguageExtensions />
@@ -207,6 +207,7 @@
     <ClInclude Include="moonstdlib\stdio.h" />
     <ClInclude Include="moonstdlib\stdlib.h" />
     <ClInclude Include="moonstdlib\string.h" />
+    <ClInclude Include="moonstdlib\time.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
