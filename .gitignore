@@ -1,5 +1,4 @@
 *.bin
-*.filters
 FullMoon/bin/**
 *.db
 *.opendb

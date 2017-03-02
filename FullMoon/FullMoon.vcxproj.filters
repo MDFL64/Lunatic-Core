@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Lua">
+      <UniqueIdentifier>{f247522f-2a2f-4331-9ceb-1e3083eb6126}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\MoonStdLib">
+      <UniqueIdentifier>{01dd5a8d-9f8f-4837-b511-327ec0f2aada}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\start.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lapi.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lauxlib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lbaselib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lbitlib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lcode.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lcorolib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lctype.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\ldblib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\ldebug.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\ldo.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\ldump.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lfunc.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lgc.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\llex.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lmathlib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lmem.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\loadlib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lobject.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lopcodes.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lparser.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lstate.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lstring.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lstrlib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\ltable.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\ltablib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\ltests.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\ltm.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lundump.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lutf8lib.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lvm.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="moonstdlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="moonstdlib\moonstdlib.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\string.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\assert.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\ctype.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\errno.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\float.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\limits.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\math.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\signal.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\stdarg.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\stddef.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\stdio.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\stdlib.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\locale.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\setjmp.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="moonstdlib\time.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

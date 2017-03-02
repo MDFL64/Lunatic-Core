@@ -185,6 +185,7 @@
     <ClCompile Include="..\Lua\lundump.c" />
     <ClCompile Include="..\Lua\lutf8lib.c" />
     <ClCompile Include="..\Lua\lvm.c" />
+    <ClCompile Include="moonstdlib.c" />
     <ClCompile Include="src\start.c" />
   </ItemGroup>
   <ItemGroup>
@@ -204,9 +205,6 @@
     <ClInclude Include="moonstdlib\stdlib.h" />
     <ClInclude Include="moonstdlib\string.h" />
     <ClInclude Include="moonstdlib\time.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
