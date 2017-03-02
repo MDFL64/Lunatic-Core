@@ -1,5 +1,9 @@
 // TODO fixme
 
-typedef int va_list;
+typedef size_t va_list;
 
-#define va_arg(X,Y) 0
+#define va_arg(args,type) 0
+
+#define va_start(args,last)
+
+#define va_end(args)

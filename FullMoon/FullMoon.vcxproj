@@ -168,15 +168,12 @@
     <ClCompile Include="..\Lua\ldump.c" />
     <ClCompile Include="..\Lua\lfunc.c" />
     <ClCompile Include="..\Lua\lgc.c" />
-    <ClCompile Include="..\Lua\linit.c" />
-    <ClCompile Include="..\Lua\liolib.c" />
     <ClCompile Include="..\Lua\llex.c" />
     <ClCompile Include="..\Lua\lmathlib.c" />
     <ClCompile Include="..\Lua\lmem.c" />
     <ClCompile Include="..\Lua\loadlib.c" />
     <ClCompile Include="..\Lua\lobject.c" />
     <ClCompile Include="..\Lua\lopcodes.c" />
-    <ClCompile Include="..\Lua\loslib.c" />
     <ClCompile Include="..\Lua\lparser.c" />
     <ClCompile Include="..\Lua\lstate.c" />
     <ClCompile Include="..\Lua\lstring.c" />
@@ -188,7 +185,6 @@
     <ClCompile Include="..\Lua\lundump.c" />
     <ClCompile Include="..\Lua\lutf8lib.c" />
     <ClCompile Include="..\Lua\lvm.c" />
-    <ClCompile Include="..\Lua\lzio.c" />
     <ClCompile Include="src\start.c" />
   </ItemGroup>
   <ItemGroup>
