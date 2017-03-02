@@ -34,7 +34,7 @@
     <LinkIncremental>
     </LinkIncremental>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>C:\Users\Mad-P\Desktop\Lunatic-Moon\FullMoon\moonstdlib</IncludePath>
+    <IncludePath>$(ProjectDir)moonstdlib</IncludePath>
     <ReferencePath />
     <LibraryPath />
     <LibraryWPath />
@@ -204,6 +204,9 @@
     <ClInclude Include="moonstdlib\stdlib.h" />
     <ClInclude Include="moonstdlib\string.h" />
     <ClInclude Include="moonstdlib\time.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
