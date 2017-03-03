@@ -307,7 +307,7 @@ setup_pagetable:
 	mov eax, 0x70000
 	mov cr3, eax
 
-	; enable pae
+	; enable pae, sse
 	mov eax, cr4
 	or eax, 0x20
 	mov cr4, eax
@@ -989,9 +989,13 @@ boot_stage3:
 	add edx,40
 	loop .section_loop
 
-	;mov ebx, [eax+0x2C] ; offset from overall base to code
-	;mov ecx, [eax+0x30] ; overall base
-	;mov eax, [eax+0x28] ; offset from overall base to entry
+	; enable sse for float ops
+	mov rax, cr4
+	or rax, 0x200
+	mov cr4, rax
+
+	; reset fpu
+	fninit
 
 	jmp r11
 

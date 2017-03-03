@@ -3,13 +3,9 @@ typedef struct {
 	const char* decimal_point;
 } lconv;
 
-lconv locale = {
-	.decimal_point = "."
-};
+extern lconv locale;
 
-lconv* localeconv() {
-	return &locale;
-}
+lconv* localeconv();
 
 #define LC_ALL 1
 #define LC_COLLATE 2

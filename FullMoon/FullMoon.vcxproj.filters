@@ -15,6 +15,8 @@
     </Filter>
     <Filter Include="Source Files\Lua">
       <UniqueIdentifier>{f247522f-2a2f-4331-9ceb-1e3083eb6126}</UniqueIdentifier>
+      <Extensions>
+      </Extensions>
     </Filter>
     <Filter Include="Header Files\MoonStdLib">
       <UniqueIdentifier>{01dd5a8d-9f8f-4837-b511-327ec0f2aada}</UniqueIdentifier>
@@ -27,25 +29,10 @@
     <ClCompile Include="..\Lua\lapi.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\Lua\lauxlib.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lbaselib.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lbitlib.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
     <ClCompile Include="..\Lua\lcode.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\Lua\lcorolib.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
     <ClCompile Include="..\Lua\lctype.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\ldblib.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
     <ClCompile Include="..\Lua\ldebug.c">
@@ -66,13 +53,7 @@
     <ClCompile Include="..\Lua\llex.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\Lua\lmathlib.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
     <ClCompile Include="..\Lua\lmem.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\loadlib.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
     <ClCompile Include="..\Lua\lobject.c">
@@ -90,13 +71,7 @@
     <ClCompile Include="..\Lua\lstring.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\Lua\lstrlib.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
     <ClCompile Include="..\Lua\ltable.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\ltablib.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
     <ClCompile Include="..\Lua\ltests.c">
@@ -108,13 +83,16 @@
     <ClCompile Include="..\Lua\lundump.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
-    <ClCompile Include="..\Lua\lutf8lib.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
     <ClCompile Include="..\Lua\lvm.c">
       <Filter>Source Files\Lua</Filter>
     </ClCompile>
     <ClCompile Include="moonstdlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Lua\lzio.c">
+      <Filter>Source Files\Lua</Filter>
+    </ClCompile>
+    <ClCompile Include="src\screen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -166,6 +144,9 @@
     </ClInclude>
     <ClInclude Include="moonstdlib\time.h">
       <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
+    <ClInclude Include="src\screen.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

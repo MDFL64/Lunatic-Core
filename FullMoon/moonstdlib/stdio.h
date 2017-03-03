@@ -17,3 +17,5 @@ typedef size_t FILE;
 FILE* stdin;
 FILE* stdout;
 FILE* stderr;
+
+int snprintf(char * s, size_t n, const char * format, ...);

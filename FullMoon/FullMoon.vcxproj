@@ -34,7 +34,8 @@
     <LinkIncremental>
     </LinkIncremental>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
-    <IncludePath>$(ProjectDir)moonstdlib</IncludePath>
+    <IncludePath>
+    </IncludePath>
     <ReferencePath />
     <LibraryPath />
     <LibraryWPath />
@@ -62,13 +63,14 @@
       </PreprocessorDefinitions>
       <DebugInformationFormat />
       <SuppressStartupBanner />
-      <TreatWarningAsError />
+      <TreatWarningAsError>
+      </TreatWarningAsError>
       <InlineFunctionExpansion />
       <FavorSizeOrSpeed />
       <EnableFiberSafeOptimizations />
       <WholeProgramOptimization />
       <UndefineAllPreprocessorDefinitions>true</UndefineAllPreprocessorDefinitions>
-      <IgnoreStandardIncludePath />
+      <IgnoreStandardIncludePath>true</IgnoreStandardIncludePath>
       <PreprocessToFile />
       <PreprocessSuppressLineNumbers />
       <PreprocessKeepComments />
@@ -81,7 +83,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableEnhancedInstructionSet />
       <FloatingPointModel />
-      <DisableLanguageExtensions />
+      <DisableLanguageExtensions>true</DisableLanguageExtensions>
       <TreatWChar_tAsBuiltInType />
       <ForceConformanceInForLoopScope />
       <RemoveUnreferencedCodeData />
@@ -98,9 +100,11 @@
       <BrowseInformationFile />
       <CompileAs>CompileAsC</CompileAs>
       <ErrorReporting />
-      <AdditionalIncludeDirectories>
-      </AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)moonstdlib;$(ProjectDir)src</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>moonstdlib.h</ForcedIncludeFiles>
+      <ShowIncludes>
+      </ShowIncludes>
+      <TreatSpecificWarningsAsErrors>4013</TreatSpecificWarningsAsErrors>
     </ClCompile>
     <Link>
       <SubSystem>Native</SubSystem>
@@ -156,36 +160,28 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Lua\lapi.c" />
-    <ClCompile Include="..\Lua\lauxlib.c" />
-    <ClCompile Include="..\Lua\lbaselib.c" />
-    <ClCompile Include="..\Lua\lbitlib.c" />
     <ClCompile Include="..\Lua\lcode.c" />
-    <ClCompile Include="..\Lua\lcorolib.c" />
     <ClCompile Include="..\Lua\lctype.c" />
-    <ClCompile Include="..\Lua\ldblib.c" />
     <ClCompile Include="..\Lua\ldebug.c" />
     <ClCompile Include="..\Lua\ldo.c" />
     <ClCompile Include="..\Lua\ldump.c" />
     <ClCompile Include="..\Lua\lfunc.c" />
     <ClCompile Include="..\Lua\lgc.c" />
     <ClCompile Include="..\Lua\llex.c" />
-    <ClCompile Include="..\Lua\lmathlib.c" />
     <ClCompile Include="..\Lua\lmem.c" />
-    <ClCompile Include="..\Lua\loadlib.c" />
     <ClCompile Include="..\Lua\lobject.c" />
     <ClCompile Include="..\Lua\lopcodes.c" />
     <ClCompile Include="..\Lua\lparser.c" />
     <ClCompile Include="..\Lua\lstate.c" />
     <ClCompile Include="..\Lua\lstring.c" />
-    <ClCompile Include="..\Lua\lstrlib.c" />
     <ClCompile Include="..\Lua\ltable.c" />
-    <ClCompile Include="..\Lua\ltablib.c" />
     <ClCompile Include="..\Lua\ltests.c" />
     <ClCompile Include="..\Lua\ltm.c" />
     <ClCompile Include="..\Lua\lundump.c" />
-    <ClCompile Include="..\Lua\lutf8lib.c" />
     <ClCompile Include="..\Lua\lvm.c" />
+    <ClCompile Include="..\Lua\lzio.c" />
     <ClCompile Include="moonstdlib.c" />
+    <ClCompile Include="src\screen.c" />
     <ClCompile Include="src\start.c" />
   </ItemGroup>
   <ItemGroup>
@@ -205,6 +201,7 @@
     <ClInclude Include="moonstdlib\stdlib.h" />
     <ClInclude Include="moonstdlib\string.h" />
     <ClInclude Include="moonstdlib\time.h" />
+    <ClInclude Include="src\screen.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
