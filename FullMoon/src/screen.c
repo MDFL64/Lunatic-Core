@@ -67,3 +67,27 @@ void write_int(__int64 n) {
 		place /= 10;
 	}
 }
+
+void write_hex(unsigned __int64 n) {
+	unsigned __int64 mask = 0xF000000000000000;
+	int shift = 60;
+
+	write_char('0');
+	write_char('x');
+
+	while ((mask & n) == 0 && shift>0) {
+		mask >>= 4;
+		shift -= 4;
+	}
+
+	while (shift>=0) {
+		int d = (mask & n) >> shift;
+		if (d<10)
+			write_char('0'+d);
+		else {
+			write_char('A' + d - 10);
+		}
+		mask >>= 4;
+		shift -= 4;
+	}
+}

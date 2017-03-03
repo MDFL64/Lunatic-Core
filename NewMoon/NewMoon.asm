@@ -2,6 +2,7 @@ virtual at 0
 kernel_info_table:
 	.mem_low: dd 0
 	.mem_high: dd 0
+	.kernel_end: dq 0
 	.init_file_count: dd 0
 	.init_files:
 end virtual
@@ -971,9 +972,9 @@ boot_stage3:
 	; edx = current section base
 	
 	;mov r?, [edx] ; section name [meh]
-	mov r8d, [edx+0x14] ; source offset = 400?
-	mov r9d, [edx+0x0C] ; dest offset = 1000
-	mov r10d, [edx+0x10] ; size = 200
+	mov r8d, [edx+0x14] ; source offset
+	mov r9d, [edx+0x0C] ; dest offset
+	mov r10d, [edx+0x10] ; size
 
 	mov rsi, rax
 	add rsi, r8
@@ -984,6 +985,12 @@ boot_stage3:
 
 	rep movsb
 
+	cmp rdi, [kernel_info_table.kernel_end+0x60000]
+	jb .no_update_kernel_end
+
+	mov [kernel_info_table.kernel_end+0x60000], rdi
+
+	.no_update_kernel_end:
 	pop rcx
 	
 	add edx,40
@@ -999,10 +1006,10 @@ boot_stage3:
 
 	jmp r11
 
-kernel_source:
-	dd 0
-kernel_size: ; not sure I even need this...
-	dd 0
+;kernel_source:
+;	dd 0
+;kernel_size: ; not sure I even need this...
+;	dd 0
 
 
 

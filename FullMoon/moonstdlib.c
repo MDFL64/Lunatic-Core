@@ -10,6 +10,7 @@
 
 void abort() {
 	// ?
+	write_str("[ABORT]\n");
 }
 
 void _fltused() {
@@ -23,26 +24,32 @@ void __chkstk() {
 // IO
 
 FILE * fopen(const char * filename, const char * mode) {
+	write_str("[FOPEN]\n");
 	return 0;
 }
 
 int fclose(FILE * stream) {
+	write_str("[FCLOSE]\n");
 	return 0;
 }
 
 int fflush(FILE * stream) {
+	write_str("[FFLUSh]\n");
 	return 0;
 }
 
 int fprintf(FILE * stream, const char * format, ...) {
+	write_str("[FPRINTF]\n");
 	return 0;
 }
 
 size_t fread(void * ptr, size_t size, size_t count, FILE * stream) {
+	write_str("[FREAD]\n");
 	return 0;
 }
 
 int snprintf(char * s, size_t n, const char * format, ...) {
+	write_str("[SNPRINTF]\n");
 	return 0;
 }
 
@@ -53,12 +60,14 @@ lconv locale = {
 };
 
 lconv* localeconv() {
+	write_str("[LOCALE]\n");
 	return &locale;
 }
 
 // Time
 
 time_t time(time_t* timer) {
+	write_str("[TIME]\n");
 	return 0;
 }
 
@@ -103,18 +112,22 @@ const char* strchr(const char* str, int character) {
 }
 
 double strtod(const char* str, char** endptr) {
+	write_str("[STR2D]\n");
 	return 0;
 }
 
 const char * strpbrk(const char * str1, const char * str2) {
+	write_str("[STRPBRK]\n");
 	return str1;
 }
 
 int strcoll(const char * str1, const char * str2) {
+	write_str("[STRCOLL]\n");
 	return 0;
 }
 
 size_t strspn(const char * str1, const char * str2) {
+	write_str("[STRSPN]\n");
 	return 0;
 }
 
@@ -127,14 +140,17 @@ double abs(double x) {
 }
 
 double pow(double x) {
+	write_str("[POW]\n");
 	return -1;
 }
 
 double fmod(double x) {
+	write_str("[FMOD]\n");
 	return -1;
 }
 
 double frexp(double x, int* exp) {
+	write_str("[FREXP]\n");
 	return -1;
 }
 
@@ -147,9 +163,9 @@ double floor(double x) {
 
 // long jump
 void longjmp(jmp_buf env, int val) {
-
+	write_str("[LONG JUMP]\n");
 }
 
 int setjmp(jmp_buf env) {
-
+	write_str("[SET JUMP]\n");
 }
