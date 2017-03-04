@@ -81,7 +81,7 @@
       <RuntimeLibrary />
       <StructMemberAlignment />
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <EnableEnhancedInstructionSet />
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
       <FloatingPointModel />
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
       <TreatWChar_tAsBuiltInType />
@@ -100,7 +100,7 @@
       <BrowseInformationFile />
       <CompileAs>CompileAsC</CompileAs>
       <ErrorReporting />
-      <AdditionalIncludeDirectories>$(ProjectDir)moonstdlib;$(ProjectDir)src</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)moonstdlib</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>moonstdlib.h</ForcedIncludeFiles>
       <ShowIncludes>
       </ShowIncludes>
@@ -125,7 +125,7 @@
       <EnableUAC />
       <UACExecutionLevel />
       <UACUIAccess />
-      <GenerateMapFile />
+      <GenerateMapFile>true</GenerateMapFile>
       <MapExports />
       <SwapRunFromCD />
       <SwapRunFromNET />
@@ -159,28 +159,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Lua\lapi.c" />
-    <ClCompile Include="..\Lua\lcode.c" />
-    <ClCompile Include="..\Lua\lctype.c" />
-    <ClCompile Include="..\Lua\ldebug.c" />
-    <ClCompile Include="..\Lua\ldo.c" />
-    <ClCompile Include="..\Lua\ldump.c" />
-    <ClCompile Include="..\Lua\lfunc.c" />
-    <ClCompile Include="..\Lua\lgc.c" />
-    <ClCompile Include="..\Lua\llex.c" />
-    <ClCompile Include="..\Lua\lmem.c" />
-    <ClCompile Include="..\Lua\lobject.c" />
-    <ClCompile Include="..\Lua\lopcodes.c" />
-    <ClCompile Include="..\Lua\lparser.c" />
-    <ClCompile Include="..\Lua\lstate.c" />
-    <ClCompile Include="..\Lua\lstring.c" />
-    <ClCompile Include="..\Lua\ltable.c" />
-    <ClCompile Include="..\Lua\ltests.c" />
-    <ClCompile Include="..\Lua\ltm.c" />
-    <ClCompile Include="..\Lua\lundump.c" />
-    <ClCompile Include="..\Lua\lvm.c" />
-    <ClCompile Include="..\Lua\lzio.c" />
-    <ClCompile Include="moonstdlib.c" />
+    <ClCompile Include="src\moonstdlib.c" />
     <ClCompile Include="src\screen.c" />
     <ClCompile Include="src\start.c" />
   </ItemGroup>

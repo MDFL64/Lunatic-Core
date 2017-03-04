@@ -1,5 +1,6 @@
-#include <screen.h>
+#include "screen.h"
 #include <string.h>
+#include <stdio.h>
 
 #include "../../Lua/lua.h"
 
@@ -29,9 +30,9 @@ void* moon_alloc(void* ud, void* optr, size_t osize, size_t nsize) {
 	if (optr != NULL)
 		memcpy(nptr, optr, osize);
 
-	write_str("ALLOCATE ");
-	write_int(nsize);
-	write_str("\n");
+	//write_str("ALLOCATE ");
+	//write_int(nsize);
+	//write_str("\n");
 
 	return nptr;
 }
@@ -42,7 +43,6 @@ typedef struct {
 } load_data;
 
 const char* do_load_data(lua_State *L, void *ud, size_t *size) {
-	write_str("LOAD!\n");
 	load_data* d = ud;
 
 	if (d->done)
@@ -84,20 +84,40 @@ void main() {
 
 		//for (size_t y = 0; y < 10000000; y++);
 	}*/
+	//long long bleh = 1000;
+	//char buffer[100];
+	//int rr = snprintf(buffer, 100, "%lld", bleh);
+
+	//write_str("? = ");
+	//write_int(rr);
+	//write_str("\n");
+
 	lua_State* state = lua_newstate(moon_alloc, 0);
 
-	write_str("...\n");
-
 	load_data d;
-	d.text = "return 2+2";
+	d.text = "local x = 0 for i=1,10 do x=x+i end return x";
 	d.done = 0;
 
-	int r = 12;
-	r = lua_load(state, do_load_data, &d, "test", NULL);
+	write_str("Code = ");
+	write_str(d.text);
+	write_str("\n");
 
-	write_str("result = ");
-	write_int(r);
-	write_str("\n...\n");
+	int r = lua_load(state, do_load_data, &d, "test", NULL);
 
+	if (r != 0) {
+		write_str("There was an error loading the script!");
+		__halt();
+	}
+
+	write_str("Compiled!\n");
+
+	lua_call(state, 0, 1);
+	double x = lua_tonumber(state, -1);
+
+	write_str("Result = ");
+	write_int(x);
+	write_str("\n");
+
+	write_str("Kernel done?!?");
 	__halt();
 }

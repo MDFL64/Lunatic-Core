@@ -13,11 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\Lua">
-      <UniqueIdentifier>{f247522f-2a2f-4331-9ceb-1e3083eb6126}</UniqueIdentifier>
-      <Extensions>
-      </Extensions>
-    </Filter>
     <Filter Include="Header Files\MoonStdLib">
       <UniqueIdentifier>{01dd5a8d-9f8f-4837-b511-327ec0f2aada}</UniqueIdentifier>
     </Filter>
@@ -26,73 +21,10 @@
     <ClCompile Include="src\start.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Lua\lapi.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lcode.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lctype.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\ldebug.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\ldo.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\ldump.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lfunc.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lgc.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\llex.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lmem.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lobject.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lopcodes.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lparser.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lstate.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lstring.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\ltable.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\ltests.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\ltm.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lundump.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Lua\lvm.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="moonstdlib.c">
+    <ClCompile Include="src\screen.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Lua\lzio.c">
-      <Filter>Source Files\Lua</Filter>
-    </ClCompile>
-    <ClCompile Include="src\screen.c">
+    <ClCompile Include="src\moonstdlib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
