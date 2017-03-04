@@ -1,6 +1,3 @@
 [submodule "LuaJIT"]
 	path = LuaJIT
 	url = https://github.com/birdbrainswagtrain/LuaJIT.git
-[submodule "Lua"]
-	path = Lua
-	url = https://github.com/lua/lua.git
