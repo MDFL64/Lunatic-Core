@@ -211,6 +211,9 @@
     <ClCompile Include="moonstdlib\string.c">
       <Filter>Source Files\MoonStdLib</Filter>
     </ClCompile>
+    <ClCompile Include="src\lj_shim.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="moonstdlib\moonstdlib.h">

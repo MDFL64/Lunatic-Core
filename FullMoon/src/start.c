@@ -1,8 +1,9 @@
 #include "screen.h"
 #include <string.h>
-#include <stdio.h>
+#include <stdlib.h>
+//#include <stdio.h>
 
-//#include "../../Lua/lua.h"
+#include "lauxlib.h"
 
 struct {
 	unsigned __int64 memory_top;
@@ -13,7 +14,7 @@ struct {
 size_t heap_base;
 size_t heap_top;
 
-void* moon_alloc(void* ud, void* optr, size_t osize, size_t nsize) {
+/*void* moon_alloc(void* ud, void* optr, size_t osize, size_t nsize) {
 	void* nptr = heap_base;
 	heap_base += nsize;
 	
@@ -28,14 +29,14 @@ void* moon_alloc(void* ud, void* optr, size_t osize, size_t nsize) {
 	}
 
 	if (optr != NULL)
-		memcpy(nptr, optr, osize);
+		memcpy(new_ptr, optr, osize);
 
 	//write_str("ALLOCATE ");
 	//write_int(nsize);
 	//write_str("\n");
 
 	return nptr;
-}
+}*/
 
 typedef struct {
 	const char* text;
@@ -74,6 +75,10 @@ void main() {
 	write_str("Heap size: ");
 	write_hex(heap_size);
 	write_str("\n");
+
+	setup_heap(heap_base, heap_top);
+
+	lua_State* state = luaL_newstate();
 
 	/*for (;;) {
 		__int8* x = moon_alloc(1024);

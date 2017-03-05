@@ -1,4 +1,7 @@
-#include "../src/screen.h"
+#include <stdlib.h>
+#include <string.h>
+
+#include "screen.h"
 
 void _fltused() {
 	write_str("[FLOAT]\n");
@@ -21,16 +24,34 @@ void exit(int status) {
 	return -1;
 }
 
-void *realloc(void *ptr, size_t size) {
-	write_str("alloc\n");
-	__halt();
+size_t heap_base;
+size_t heap_top;
+
+void setup_heap(size_t base, size_t top) {
+	heap_base = base;
+	heap_top = top;
+}
+
+void* realloc(void *ptr, size_t size) {
+	if (size == 0) {
+		write_str("alloc size = 0\n");
+		__halt();
+	}
+	
+	void* new_ptr = heap_base;
+	heap_base += size;
+
+	if (ptr != NULL) {
+		memcpy(new_ptr, ptr, size);
+		free(ptr);
+	}
+
 	return -1;
 }
 
 void free(void *ptr) {
 	write_str("free\n");
 	__halt();
-	return -1;
 }
 
 unsigned long int strtoul(const char* str, char** endptr, int base) {

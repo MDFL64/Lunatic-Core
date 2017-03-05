@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "../src/screen.h"
+#include "screen.h"
 
 FILE * fopen(const char * filename, const char * mode) {
 	write_str("fopen\n");

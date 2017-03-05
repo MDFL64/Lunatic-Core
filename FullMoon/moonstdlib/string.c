@@ -1,4 +1,4 @@
-#include "../src/screen.h"
+#include "screen.h"
 
 // String
 

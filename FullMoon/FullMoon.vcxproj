@@ -101,7 +101,7 @@
       <BrowseInformationFile />
       <CompileAs>CompileAsC</CompileAs>
       <ErrorReporting />
-      <AdditionalIncludeDirectories>$(ProjectDir)moonstdlib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../LuaJIT/src;$(ProjectDir)src;$(ProjectDir)moonstdlib</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>moonstdlib.h</ForcedIncludeFiles>
       <ShowIncludes>
       </ShowIncludes>
@@ -220,6 +220,7 @@
     <ClCompile Include="moonstdlib\stdio.c" />
     <ClCompile Include="moonstdlib\stdlib.c" />
     <ClCompile Include="moonstdlib\string.c" />
+    <ClCompile Include="src\lj_shim.c" />
     <ClCompile Include="src\screen.c" />
     <ClCompile Include="src\start.c" />
   </ItemGroup>
