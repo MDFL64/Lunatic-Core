@@ -1,4 +1,4 @@
-// TODO fixme
+#pragma once // DONE
 
 typedef size_t va_list;
 

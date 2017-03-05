@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#include "../../Lua/lua.h"
+//#include "../../Lua/lua.h"
 
 struct {
 	unsigned __int64 memory_top;
@@ -42,7 +42,7 @@ typedef struct {
 	int done;
 } load_data;
 
-const char* do_load_data(lua_State *L, void *ud, size_t *size) {
+/*const char* do_load_data(lua_State *L, void *ud, size_t *size) {
 	load_data* d = ud;
 
 	if (d->done)
@@ -51,7 +51,7 @@ const char* do_load_data(lua_State *L, void *ud, size_t *size) {
 	d->done = 1;
 	*size = strlen(d->text);
 	return d->text;
-}
+}*/
 
 void main() {
 	write_str("Kernel starting...\n");
@@ -92,7 +92,7 @@ void main() {
 	//write_int(rr);
 	//write_str("\n");
 
-	lua_State* state = lua_newstate(moon_alloc, 0);
+	/*lua_State* state = lua_newstate(moon_alloc, 0);
 
 	load_data d;
 	d.text = "local x = 0 for i=1,10 do x=x+i end return x";
@@ -116,7 +116,7 @@ void main() {
 
 	write_str("Result = ");
 	write_int(x);
-	write_str("\n");
+	write_str("\n");*/
 
 	write_str("Kernel done?!?");
 	__halt();

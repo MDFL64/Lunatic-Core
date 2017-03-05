@@ -1,21 +1,27 @@
+#pragma once // DONE
+
 typedef size_t FILE;
 
-#define EOF -1
-
 #define BUFSIZ 1024
-#define L_tmpnam 1024
-
-#define SEEK_SET 1
-#define SEEK_CUR 2
-#define SEEK_END 3
-
-#define _IONBF 1
-#define _IOLBF 2
-#define _IOFBF 3
-
 
 FILE* stdin;
 FILE* stdout;
 FILE* stderr;
 
-int snprintf(char * s, size_t n, const char * format, ...);
+FILE * fopen(const char * filename, const char * mode);
+int fclose(FILE * stream);
+
+size_t fread(void * ptr, size_t size, size_t count, FILE * stream);
+size_t fwrite(const void * ptr, size_t size, size_t count, FILE * stream);
+
+int sprintf(char * str, const char * format, ...);
+
+int fputc(int character, FILE * stream);
+int fputs(const char * str, FILE * stream);
+
+int fflush(FILE * stream);
+
+int feof(FILE * stream);
+int ferror(FILE * stream);
+
+int putchar(int character);

@@ -1,9 +1,10 @@
-#pragma once
+#pragma once // DONE
 
-// We should really never be exiting, in the traditional sense.
-#define EXIT_SUCCESS -1
 #define EXIT_FAILURE -1
 
-#define RAND_MAX ((unsigned int)-1)
+void exit(int status);
 
-void abort();
+void *realloc(void *ptr, size_t size);
+void free(void *ptr);
+
+unsigned long int strtoul(const char* str, char** endptr, int base);

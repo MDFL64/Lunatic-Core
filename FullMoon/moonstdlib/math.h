@@ -1,13 +1,11 @@
-#pragma once
-
-#define HUGE_VAL ((double)0x7ff0000000000000)
-
-double abs(double x);
-
-double pow(double x, double y);
-
-double fmod(double x, double y);
-
-double frexp(double x, int* exp);
+#pragma once // DONE
 
 double floor(double x);
+
+double sinh(double x);
+
+double cosh(double x);
+
+double tanh(double x);
+
+double ldexp(double x, int exp);

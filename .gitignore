@@ -1,6 +1,9 @@
-*.bin
 FullMoon/bin/**
+*.exe
+*.obj
+*.bin
 *.db
 *.opendb
 *.sdf
+*.user
 */.vs/*

@@ -1,1 +1,0 @@
-typedef size_t sig_atomic_t;
