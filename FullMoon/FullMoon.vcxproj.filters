@@ -246,5 +246,8 @@
     <ClInclude Include="src\screen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="moonstdlib\moonljcfg.h">
+      <Filter>Header Files\MoonStdLib</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

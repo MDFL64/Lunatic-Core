@@ -21,6 +21,28 @@ int memcmp(const void* ptr1, const void* ptr2, size_t num) {
 	return *_ptr1 - *_ptr2;
 }
 
+/*void* memcpy(void* dest, const void* src, size_t count) {
+	unsigned __int8* ptr_dest = dest;
+	const unsigned __int8* ptr_src = src;
+
+	while (count > 0) {
+		*ptr_dest = *ptr_src;
+		ptr_dest++;
+		ptr_src++;
+		count--;
+	}
+}
+
+void* memset(void* dest, int c, size_t count) {
+	unsigned __int8* ptr = dest;
+
+	while (count > 0) {
+		*ptr = c;
+		ptr++;
+		count--;
+	}
+}*/
+
 void * memmove(void * destination, const void * source, size_t num) {
 	write_str("memmove\n");
 	__halt();
@@ -51,9 +73,11 @@ char *strstr(const char *haystack, const char *needle) {
 	return 0;
 }
 
+// Pretty sure this works.
 const char* strchr(const char* str, int character) {
-	write_str("strchr\n");
-	__halt();
+	//write_str("strchr\n");
+	//write_str(str);
+	//__halt();
 	
 	while (*str != 0 && *str != character)
 		str++;

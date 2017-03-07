@@ -4,6 +4,7 @@
 //#include <stdio.h>
 
 #include "lauxlib.h"
+#include "lualib.h"
 
 struct {
 	unsigned __int64 memory_top;
@@ -79,50 +80,27 @@ void main() {
 	setup_heap(heap_base, heap_top);
 
 	lua_State* state = luaL_newstate();
+	luaL_openlibs(state);
+	
+	const char* test = "local x = 0 for i=1,1000 do x=x+i end print(x)";
 
-	/*for (;;) {
-		__int8* x = moon_alloc(1024);
-
-		write_str("> ");
-		write_hex(x);
-		write_str("\n");
-
-		//for (size_t y = 0; y < 10000000; y++);
-	}*/
-	//long long bleh = 1000;
-	//char buffer[100];
-	//int rr = snprintf(buffer, 100, "%lld", bleh);
-
-	//write_str("? = ");
-	//write_int(rr);
-	//write_str("\n");
-
-	/*lua_State* state = lua_newstate(moon_alloc, 0);
-
-	load_data d;
-	d.text = "local x = 0 for i=1,10 do x=x+i end return x";
-	d.done = 0;
-
-	write_str("Code = ");
-	write_str(d.text);
+	write_str("Test script: ");
+	write_str(test);
 	write_str("\n");
 
-	int r = lua_load(state, do_load_data, &d, "test", NULL);
-
-	if (r != 0) {
-		write_str("There was an error loading the script!");
+	if (luaL_loadstring(state, test)) {
+		write_str("Failed to load test script.");
 		__halt();
 	}
 
-	write_str("Compiled!\n");
-
 	lua_call(state, 0, 1);
-	double x = lua_tonumber(state, -1);
+	double res = lua_tonumber(state, -1);
 
-	write_str("Result = ");
-	write_int(x);
-	write_str("\n");*/
+	write_str("Result: ");
+	write_int(res);
+	write_str("\n");
 
-	write_str("Kernel done?!?");
+	write_str("glua.team official operating system hurr\n");
+
 	__halt();
 }

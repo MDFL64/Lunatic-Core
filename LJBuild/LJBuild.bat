@@ -1,8 +1,8 @@
 gcc ../LuaJIT/src/host/minilua.c -o minilua
 
-minilua ../LuaJIT/dynasm/dynasm.lua -LN -D P64 -o ../LuaJIT/src/host/buildvm_arch.h ../LuaJIT/src/vm_x86.dasc
+minilua ../LuaJIT/dynasm/dynasm.lua -LN -D WIN -D P64 -o ../LuaJIT/src/host/buildvm_arch.h ../LuaJIT/src/vm_x86.dasc
 
-gcc ../LuaJIT/src/host/buildvm*.c -o buildvm -I ../LuaJIT/src
+gcc ../LuaJIT/src/host/buildvm*.c -o buildvm -I ../LuaJIT/src -include ../FullMoon/moonstdlib/moonljcfg.h
 
 buildvm -m peobj -o lj_vm.obj
 

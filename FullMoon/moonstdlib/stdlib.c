@@ -24,6 +24,12 @@ void exit(int status) {
 	return -1;
 }
 
+int arg_stub() {
+	write_str("get arg\n");
+	__halt();
+	return 0;
+}
+
 size_t heap_base;
 size_t heap_top;
 
@@ -46,12 +52,11 @@ void* realloc(void *ptr, size_t size) {
 		free(ptr);
 	}
 
-	return -1;
+	return new_ptr;
 }
 
 void free(void *ptr) {
-	write_str("free\n");
-	__halt();
+	// TODO
 }
 
 unsigned long int strtoul(const char* str, char** endptr, int base) {

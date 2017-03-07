@@ -2,7 +2,9 @@
 
 typedef size_t va_list;
 
-#define va_arg(args,type) 0
+int arg_stub();
+
+#define va_arg(args,type) arg_stub()
 
 #define va_start(args,last)
 

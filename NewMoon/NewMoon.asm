@@ -68,7 +68,6 @@ boot_stage1:
 	mov ax,0x5000
 	mov ss,ax
 	mov esp,0xFFF0
-	mov ebp,esp
 	
 	mov si, error_a20
 	jc boot_halt

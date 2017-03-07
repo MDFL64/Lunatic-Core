@@ -40,6 +40,7 @@ int fputc(int character, FILE * stream) {
 
 int fputs(const char * str, FILE * stream) {
 	write_str("fputs\n");
+	write_str(str);
 	__halt();
 	return -1;
 }

@@ -66,7 +66,8 @@
       <TreatWarningAsError>
       </TreatWarningAsError>
       <InlineFunctionExpansion />
-      <FavorSizeOrSpeed />
+      <FavorSizeOrSpeed>
+      </FavorSizeOrSpeed>
       <EnableFiberSafeOptimizations />
       <WholeProgramOptimization />
       <UndefineAllPreprocessorDefinitions>true</UndefineAllPreprocessorDefinitions>
@@ -227,6 +228,7 @@
   <ItemGroup>
     <ClInclude Include="moonstdlib\errno.h" />
     <ClInclude Include="moonstdlib\limits.h" />
+    <ClInclude Include="moonstdlib\moonljcfg.h" />
     <ClInclude Include="moonstdlib\math.h" />
     <ClInclude Include="moonstdlib\moonstdlib.h" />
     <ClInclude Include="moonstdlib\stdarg.h" />
