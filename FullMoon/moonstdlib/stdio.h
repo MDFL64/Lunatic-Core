@@ -4,9 +4,9 @@ typedef size_t FILE;
 
 #define BUFSIZ 1024
 
-FILE* stdin;
-FILE* stdout;
-FILE* stderr;
+extern FILE* stdin;
+extern FILE* stdout;
+extern FILE* stderr;
 
 FILE * fopen(const char * filename, const char * mode);
 int fclose(FILE * stream);

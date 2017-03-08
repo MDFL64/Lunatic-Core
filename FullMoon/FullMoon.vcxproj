@@ -37,7 +37,7 @@
     <IncludePath>
     </IncludePath>
     <ReferencePath />
-    <LibraryPath>C:\Users\Mad-P\Desktop\Lunatic-Moon\LJBuild;</LibraryPath>
+    <LibraryPath>$(ProjectDir)../LJBuild;</LibraryPath>
     <LibraryWPath />
     <SourcePath />
     <ExcludePath />

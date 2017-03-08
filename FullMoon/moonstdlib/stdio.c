@@ -2,6 +2,10 @@
 
 #include "screen.h"
 
+FILE* stdin = 1;
+FILE* stdout = 2;
+FILE* stderr = 3;
+
 FILE * fopen(const char * filename, const char * mode) {
 	write_str("fopen\n");
 	__halt();
@@ -21,9 +25,17 @@ size_t fread(void * ptr, size_t size, size_t count, FILE * stream) {
 }
 
 size_t fwrite(const void * ptr, size_t size, size_t count, FILE * stream) {
-	write_str("fwrite\n");
-	__halt();
-	return -1;
+	if (stream == stdout) {
+		write_str_n(ptr, size * count);
+		write_str("\n");
+		return count;
+	}
+	else {
+		write_str("fwrite to: ");
+		write_int(stream);
+		write_str("\n");
+		__halt();
+	}
 }
 
 int sprintf(char * str, const char * format, ...) {
@@ -64,7 +76,6 @@ int ferror(FILE * stream) {
 }
 
 int putchar(int character) {
-	write_str("putchar\n");
-	__halt();
-	return -1;
+	write_char(character);
+	return character;
 }

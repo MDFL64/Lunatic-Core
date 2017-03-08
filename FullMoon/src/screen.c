@@ -47,6 +47,16 @@ void write_str(const char* str) {
 	update_cursor();
 }
 
+void write_str_n(const char* str, size_t n) {
+	if (str == NULL)
+		return;
+
+	int i = 0;
+	while (i < n)
+		write_char(str[i++]);
+	update_cursor();
+}
+
 void write_int(__int64 n) {
 	if (n<0) {
 		write_char('-');
