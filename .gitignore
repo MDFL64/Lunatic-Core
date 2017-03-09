@@ -1,4 +1,6 @@
 old_kernel/bin/**
+bin/*.asm
+bin/*.a
 *.exe
 *.obj
 *.bin

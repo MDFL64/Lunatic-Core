@@ -1,6 +1,6 @@
 #pragma once // DONE
 
-typedef size_t va_list;
+typedef long va_list;
 
 int arg_stub();
 

@@ -1,4 +1,6 @@
-#pragma once // DONE
+#pragma once
+
+#include <stddef.h>
 
 typedef size_t FILE;
 
