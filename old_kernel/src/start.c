@@ -82,7 +82,7 @@ void main() {
 	lua_State* state = luaL_newstate();
 	luaL_openlibs(state);
 	
-	const char* test = "local x = 0 for i=1,1000 do x=x+i end print('reeeeeeeeeee') print(x)";
+	const char* test = "local x = 0 for i=1,1000 do x=x+i end print('reeeeeeeeeee') print('gah') x = 123";
 
 	write_str("Test script: ");
 	write_str(test);
