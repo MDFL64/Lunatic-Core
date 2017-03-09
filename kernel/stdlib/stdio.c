@@ -69,7 +69,6 @@ int ferror(FILE * stream) {
 
 int putchar(int character) {
 	write_char(character);
-	write_int(character);
 	for (int i = 0; i < 1000000000; i++);
 	return character;
 }

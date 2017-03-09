@@ -21,7 +21,7 @@ void exit(int status) {
 }
 
 int arg_stub() {
-	write_str_halt("get arg\n");
+	write_str("get arg\n");
 	return 0;
 }
 

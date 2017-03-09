@@ -14,9 +14,13 @@ var libs = [
 ];
 
 var config = [
+	"-D","LUAJIT_TARGET=LUAJIT_ARCH_X64",
+	"-D","LUAJIT_OS=LUAJIT_OS_OTHER",
+
 	"-D","LUAJIT_USE_SYSMALLOC",
+	"-D","LJ_NO_UNWIND",
 	"-D","LUAJIT_DISABLE_JIT",
-	"-D","LUAJIT_DISABLE_FFI"
+	//"-D","LUAJIT_DISABLE_FFI",
 ];
 
 options.kernel = function() {
@@ -26,7 +30,7 @@ options.kernel = function() {
 		"-std=gnu99",
 		
 		//"-Wall",
-		"-w",
+		//"-w",
 
 		"-I","kernel/src",
 		"-I","kernel/stdlib",
@@ -40,6 +44,8 @@ options.kernel = function() {
 		"kernel/src/*.c",
 		"kernel/stdlib/*.c",
 		"LuaJIT/src/lj_*.c",
+		"LuaJIT/src/lib_aux.c",
+		"LuaJIT/src/lib_init.c",
 
 		"-L","bin",
 		"-llj_vm",
@@ -48,7 +54,7 @@ options.kernel = function() {
 		"-Wl,--image-base,0x1000000,--subsystem,native",
 
 		"-o","bin/FullMoon.krn"
-	].concat(config)).toString();
+	].concat(config).concat(libs)).toString();
 
 	console.log(compile_output);
 
@@ -71,8 +77,8 @@ options.ljvm = function() {
 	child_process.execFileSync("clang",[
 		"-target","x86_64-pc-windows-gnu","LuaJIT/src/host/minilua.c","-o","bin/minilua.exe"
 	]);
-	child_process.execFileSync("bin/minilua",[
-		"LuaJIT/dynasm/dynasm.lua","-LN","-D","P64","-o","LuaJIT/src/host/buildvm_arch.h","LuaJIT/src/vm_x86.dasc"
+	child_process.execFileSync("bin/minilua",[ // "-D","JIT"
+		"LuaJIT/dynasm/dynasm.lua","-LN","-D","P64","-D","FFI","-D","NO_UNWIND","-o","LuaJIT/src/host/buildvm_arch.h","LuaJIT/src/vm_x86.dasc"
 	]);
 
 	child_process.execFileSync("clang",[
@@ -90,6 +96,13 @@ options.ljvm = function() {
 	child_process.execFileSync("bin/buildvm",[
 		"-m","ffdef","-o","LuaJIT/src/lj_ffdef.h"
 	].concat(libs));
+	child_process.execFileSync("bin/buildvm",[
+		"-m","recdef","-o","LuaJIT/src/lj_recdef.h"
+	].concat(libs));
+	child_process.execFileSync("bin/buildvm",[
+		"-m","folddef","-o","LuaJIT/src/lj_folddef.h","LuaJIT/src/lj_opt_fold.c"
+	]);
+
 
 	child_process.execFileSync("as",[
 		"bin/lj_vm.asm","-o","bin/liblj_vm.a"

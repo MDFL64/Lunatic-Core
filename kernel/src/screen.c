@@ -70,6 +70,11 @@ void write_str(const char* str) {
 	update_cursor();
 }
 
+void write_str_halt(const char* str) {
+	write_str(str);
+	asm("hlt");
+}
+
 void write_str_n(const char* str, size_t n) {
 	if (str == NULL)
 		return;
