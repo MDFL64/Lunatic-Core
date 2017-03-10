@@ -1,4 +1,4 @@
-#include <lualib.h>
+/*#include <lualib.h>
 
 #include "screen.h"
 
@@ -20,4 +20,4 @@ LUALIB_API int luaopen_debug(lua_State *L) {
 
 LUALIB_API int luaopen_jit(lua_State *L) {
 	return 0;
-}
+}*/

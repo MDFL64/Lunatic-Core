@@ -114,3 +114,9 @@ char *strstr(const char *haystack, const char *needle) {
 	return 0;
 }
 
+
+
+char *strrchr(const char * str, int character) {
+	write_str_halt("strrchr\n");
+	return NULL;
+}

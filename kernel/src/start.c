@@ -11,7 +11,23 @@ struct {
 	unsigned int init_file_count;
 }* kernel_info_table = (void*)0x60000;
 
+void start_debug() {
+	asm(
+		// set addr
+		"movq $0x1027ed8, %%rax\n"
+		"movq %%rax, %%dr0\n"
+
+		// global enable cr0, global enable, bit 11, ICE
+		"movq $0x1602, %%rax\n"
+		"movq %%rax, %%dr7\n"
+		:
+		:
+		: "rax"
+	);
+}
+
 void start() {
+	//asm("hlt");
 	//write_str("Balls. ");
 	//write_int(1337);
 	//write_char(' ');
@@ -31,7 +47,7 @@ void start() {
 	lua_State* state = luaL_newstate();
 	luaL_openlibs(state);
 
-	const char* test = "local x = 0 for i=1,1000 do x=x+i end print('please') return x";
+	const char* test = "print('xyzzy') return 7"; //"local x = 0 for i=1,1000 do x=x+i end x=rawequal(3214,'asdf') if x then return #'balls' else return 2 end";
 
 	write_str("Test script: ");
 	write_str(test);
@@ -41,8 +57,10 @@ void start() {
 		write_str_halt("Failed to load test script.");
 	}
 
+	start_debug();
+
 	lua_call(state, 0, 1);
-	double res = lua_tonumber(state, -1);
+	int res = lua_gettop(state); //lua_tonumber(state, -1);
 	
 	write_str("Result: ");
 	write_int(res);

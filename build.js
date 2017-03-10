@@ -7,9 +7,14 @@ var options = {};
 var libs = [
 	"LuaJIT/src/lib_base.c",
 	"LuaJIT/src/lib_math.c",
+	"LuaJIT/src/lib_bit.c",
 	"LuaJIT/src/lib_string.c",
 	"LuaJIT/src/lib_table.c",
-	"LuaJIT/src/lib_bit.c",
+	"LuaJIT/src/lib_io.c",
+	"LuaJIT/src/lib_os.c",
+	"LuaJIT/src/lib_package.c",
+	"LuaJIT/src/lib_debug.c",
+	"LuaJIT/src/lib_jit.c",
 	"LuaJIT/src/lib_ffi.c"
 ];
 
@@ -18,9 +23,15 @@ var config = [
 	"-D","LUAJIT_OS=LUAJIT_OS_OTHER",
 
 	"-D","LUAJIT_USE_SYSMALLOC",
-	"-D","LJ_NO_UNWIND",
+	"-D","LUAJIT_NO_UNWIND",
+
 	"-D","LUAJIT_DISABLE_JIT",
-	//"-D","LUAJIT_DISABLE_FFI",
+	"-D","LUAJIT_DISABLE_FFI",
+
+	"-D","LUAJIT_ENABLE_GC64",
+
+	"-D","LUA_USE_ASSERT",
+	"-D","LUA_USE_APICHECK"
 ];
 
 options.kernel = function() {
@@ -51,8 +62,9 @@ options.kernel = function() {
 		"-llj_vm",
 
 		"-e","start",
-		"-Wl,--image-base,0x1000000,--subsystem,native",
+		"-Wl,--image-base,0x1000000,--subsystem,native,-Map=map.map",
 
+		//"-S",
 		"-o","bin/FullMoon.krn"
 	].concat(config).concat(libs)).toString();
 
@@ -77,8 +89,8 @@ options.ljvm = function() {
 	child_process.execFileSync("clang",[
 		"-target","x86_64-pc-windows-gnu","LuaJIT/src/host/minilua.c","-o","bin/minilua.exe"
 	]);
-	child_process.execFileSync("bin/minilua",[ // "-D","JIT"
-		"LuaJIT/dynasm/dynasm.lua","-LN","-D","P64","-D","FFI","-D","NO_UNWIND","-o","LuaJIT/src/host/buildvm_arch.h","LuaJIT/src/vm_x86.dasc"
+	child_process.execFileSync("bin/minilua",[ // "-D","JIT" "-D","FFI"
+		"LuaJIT/dynasm/dynasm.lua","-LN","-D","NO_UNWIND","-o","LuaJIT/src/host/buildvm_arch.h","LuaJIT/src/vm_x64.dasc"
 	]);
 
 	child_process.execFileSync("clang",[

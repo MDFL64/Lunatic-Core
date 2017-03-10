@@ -57,3 +57,15 @@ unsigned long int strtoul(const char* str, char** endptr, int base) {
 	write_str_halt("str2ul\n");
 	return -1;
 }
+
+int system(const char* command) {
+	write_str_halt("system\n");
+	return -1;
+}
+
+char* getenv(const char* name) {
+	write_str("GET ENV: ");
+	write_str(name);
+	write_char('\n');
+	return NULL;
+}

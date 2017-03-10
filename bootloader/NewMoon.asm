@@ -1003,6 +1003,8 @@ boot_stage3:
 	; reset fpu
 	fninit
 
+	mov rsp,0x5FFF8
+
 	jmp r11
 
 ;kernel_source:
