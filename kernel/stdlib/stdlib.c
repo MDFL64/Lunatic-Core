@@ -28,9 +28,14 @@ int arg_stub() {
 size_t heap_base;
 size_t heap_top;
 
+void align_base() {
+	while (heap_base % 16 != 0) heap_base++;
+}
+
 void setup_heap(size_t base, size_t top) {
 	heap_base = base;
 	heap_top = top;
+	align_base();
 }
 
 void* realloc(void *ptr, size_t size) {
@@ -40,6 +45,7 @@ void* realloc(void *ptr, size_t size) {
 	
 	void* new_ptr = (void*)heap_base;
 	heap_base += size;
+	align_base();
 
 	if (ptr != NULL) {
 		memcpy(new_ptr, ptr, size);

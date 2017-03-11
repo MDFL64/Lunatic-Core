@@ -24,7 +24,6 @@ size_t fread(void * ptr, size_t size, size_t count, FILE* stream) {
 size_t fwrite(const void * ptr, size_t size, size_t count, FILE* stream) {
 	if (stream == stdout) {
 		write_str_n(ptr, size * count);
-		write_str("\n");
 		return count;
 	}
 	else {

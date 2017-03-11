@@ -34,39 +34,42 @@ var config = [
 	"-D","LUA_USE_APICHECK"
 ];
 
+var common_args = [
+	//"-std=gnu99",
+		
+	//"-Wall",
+	//"-w",
+
+	"-I","kernel/src",
+	"-I","LuaJIT/src",
+
+	//"-O3",
+
+	"kernel/src/*.c",
+	"LuaJIT/src/lj_*.c",
+	"LuaJIT/src/lib_aux.c",
+	"LuaJIT/src/lib_init.c",
+
+	"-L","bin",
+	"-llj_vm"
+].concat(config).concat(libs);
+
 options.kernel = function() {
 	console.log(">> Building...");
 
 	var compile_output = child_process.execFileSync("clang",[
-		"-std=gnu99",
-		
-		//"-Wall",
-		//"-w",
-
-		"-I","kernel/src",
-		"-I","kernel/stdlib",
-		"-I","LuaJIT/src",
-
 		"-target","x86_64-pc-none-gnu",
 		"-nostdlib",
 
-		//"-O3",
-
-		"kernel/src/*.c",
+		"-I","kernel/stdlib",
 		"kernel/stdlib/*.c",
-		"LuaJIT/src/lj_*.c",
-		"LuaJIT/src/lib_aux.c",
-		"LuaJIT/src/lib_init.c",
-
-		"-L","bin",
-		"-llj_vm",
 
 		"-e","start",
-		"-Wl,--image-base,0x1000000,--subsystem,native,-Map=map.map",
+		"-Wl,--image-base,0x1000000,--subsystem,native,-Map=bin/FullMoon.map",
 
 		//"-S",
 		"-o","bin/FullMoon.krn"
-	].concat(config).concat(libs)).toString();
+	].concat(common_args)).toString();
 
 	console.log(compile_output);
 
@@ -85,19 +88,36 @@ options.kernel = function() {
 	console.log(">> Done!\n");
 }
 
+options.userkernel = function() {
+	var compile_output = child_process.execFileSync("clang",[
+		"-target","x86_64-pc-windows-gnu",
+
+		"-D","LUNATIC_USERMODE",
+
+		"-Wl,-Map=bin/BadMoon.map",
+		//"-S",
+		"-o","bin/BadMoon.exe"
+	].concat(common_args)).toString();
+
+	console.log(">> Done!\n");
+}
+
 options.ljvm = function() {
 	child_process.execFileSync("clang",[
 		"-target","x86_64-pc-windows-gnu","LuaJIT/src/host/minilua.c","-o","bin/minilua.exe"
 	]);
-	child_process.execFileSync("bin/minilua",[ // "-D","JIT" "-D","FFI"
+	child_process.execFileSync("bin/minilua",[ // "-D","JIT" "-D","FFI" "-D","WIN"
 		"LuaJIT/dynasm/dynasm.lua","-LN","-D","NO_UNWIND","-o","LuaJIT/src/host/buildvm_arch.h","LuaJIT/src/vm_x64.dasc"
 	]);
 
 	child_process.execFileSync("clang",[
 		"-target","x86_64-pc-windows-gnu","-I","LuaJIT/src","LuaJIT/src/host/buildvm*.c","-o","bin/buildvm.exe"
 	].concat(config));
-	child_process.execFileSync("bin/buildvm",[
+	/*child_process.execFileSync("bin/buildvm",[
 		"-m","coffasm","-o","bin/lj_vm.asm"
+	]);*/
+	child_process.execFileSync("bin/buildvm",[
+		"-m","peobj","-o","bin/liblj_vm.a"
 	]);
 	child_process.execFileSync("bin/buildvm",[
 		"-m","libdef","-o","LuaJIT/src/lj_libdef.h"
@@ -116,9 +136,9 @@ options.ljvm = function() {
 	]);
 
 
-	child_process.execFileSync("as",[
+	/*child_process.execFileSync("as",[
 		"bin/lj_vm.asm","-o","bin/liblj_vm.a"
-	]);
+	]);*/
 }
 
 selected = options[selected];

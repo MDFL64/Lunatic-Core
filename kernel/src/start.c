@@ -40,14 +40,17 @@ void start() {
 	write_int(strlen("The quick brown fox jumps over the lazy MEME!"));
 	write_char('\n');*/
 
+	#ifndef LUNATIC_USERMODE
 	setup_heap(kernel_info_table->kernel_top, kernel_info_table->memory_top);
+	#endif
 	
-	write_str("HELLO!\n");
+	write_str("FullMoon Kernel loaded!\n");
 
 	lua_State* state = luaL_newstate();
+	write_str("progress...\n");
 	luaL_openlibs(state);
 
-	const char* test = "print('xyzzy') return 7"; //"local x = 0 for i=1,1000 do x=x+i end x=rawequal(3214,'asdf') if x then return #'balls' else return 2 end";
+	const char* test = "for k,v in pairs(_G) do print(k,v) end return #_G";
 
 	write_str("Test script: ");
 	write_str(test);
@@ -57,14 +60,32 @@ void start() {
 		write_str_halt("Failed to load test script.");
 	}
 
-	start_debug();
+	//start_debug();
 
 	lua_call(state, 0, 1);
-	int res = lua_gettop(state); //lua_tonumber(state, -1);
+	int res = lua_tonumber(state, -1);
 	
 	write_str("Result: ");
+	
+	#ifdef LUNATIC_USERMODE
+	printf("%d",res);
+	#else
 	write_int(res);
+	#endif
+
 	write_str("\n");
 	
-	write_str_halt("ALL GOOD IN THE HOOD!\n");
+	write_str_halt("All done. Halting.\n");
+}
+
+#ifdef LUNATIC_USERMODE
+int main() {
+	start();
+	return 0;
+}
+#endif
+
+// this is just an exception handler, 
+void lj_err_unwind_win(void* rec,void* cf, void* ctx, void* dispatch) {
+	write_str_halt("Windows exception handler called. WTF?\n");
 }

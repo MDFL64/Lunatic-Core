@@ -1,5 +1,9 @@
 #include <string.h>
 
+#ifdef LUNATIC_USERMODE
+#include <stdio.h>
+#endif
+
 #include "screen.h"
 
 // Hopefully this is the actual terminal size.
@@ -17,6 +21,9 @@ void scroll_down() {
 	memcpy(video_memory + (TERM_H - 1) * TERM_W * 2, blankline, TERM_W * 2);
 }
 
+#ifdef LUNATIC_USERMODE
+#define update_cursor()
+#else
 void update_cursor() {
 	asm(
 		"movw $0x03D4, %%dx\n"
@@ -39,10 +46,17 @@ void update_cursor() {
 		: "dx","eax"
 	);
 }
+#endif
 
 void write_c(char c) {
+	#ifdef LUNATIC_USERMODE
+	putchar(c);
+	#else
 	if (c == '\n') {
 		cursor_i = ((cursor_i / TERM_W) + 1) * TERM_W;
+	}
+	else if (c == '\t') {
+		cursor_i += 4;
 	}
 	else {
 		video_memory[cursor_i * 2] = c;
@@ -53,6 +67,7 @@ void write_c(char c) {
 		scroll_down();
 		cursor_i = (TERM_H - 1) * TERM_W;
 	}
+	#endif
 }
 
 void write_char(char c) {
@@ -72,7 +87,11 @@ void write_str(const char* str) {
 
 void write_str_halt(const char* str) {
 	write_str(str);
+	#ifdef LUNATIC_USERMODE
+	exit(1);
+	#else
 	asm("hlt");
+	#endif
 }
 
 void write_str_n(const char* str, size_t n) {
