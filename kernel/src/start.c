@@ -45,10 +45,9 @@ void start() {
 	write_str("FullMoon Kernel loaded!\n");
 
 	lua_State* state = luaL_newstate();
-	write_str("progress...\n");
 	luaL_openlibs(state);
 
-	const char* test = "local l = #_G local t = {1,2,3,4} local ll=#t for k,v in pairs(_G) do print(k,v) end print(l,ll) return #_G";
+	const char* test = "for k,v in pairs(_G) do print(k,v) end return 69";
 
 	write_str("Test script: ");
 	write_str(test);

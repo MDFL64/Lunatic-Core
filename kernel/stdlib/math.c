@@ -31,6 +31,8 @@ double ldexp(double x, int exp) {
 	return -1;
 }
 
+//
+
 double pow(double x, double y) {
 	write_str_halt("pow\n");
 	return -1;

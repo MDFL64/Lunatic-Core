@@ -1,7 +1,6 @@
 #pragma once // DONE
 
 double floor(double x);
-double fabs(double x);
 
 double sinh(double x);
 double cosh(double x);
@@ -9,7 +8,8 @@ double tanh(double x);
 
 double ldexp(double x, int exp);
 
-// New
+// New [THESE WERE -ACTUALLY- NEEDED FOR THE UPGRADE!]
+double fabs(double x);
 
 double pow(double x, double y);
 

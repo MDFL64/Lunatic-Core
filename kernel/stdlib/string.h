@@ -16,7 +16,3 @@ size_t strlen(const char * str);
 char * strncpy(char * destination, const char * source, size_t num);
 char * strpbrk(const char * str1, const char * str2);
 char *strstr(const char *haystack, const char *needle);
-
-// NEW
-
-char *strrchr (const char * str, int character);
