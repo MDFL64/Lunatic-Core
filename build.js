@@ -5,17 +5,17 @@ var selected = process.argv[2];
 var options = {};
 
 var libs = [
-	"LuaJIT/src/lib_base.c",
+	"LuaJIT/src/lib_base.c", // todo remove even more of this.
 	"LuaJIT/src/lib_math.c",
 	"LuaJIT/src/lib_bit.c",
 	"LuaJIT/src/lib_string.c",
 	"LuaJIT/src/lib_table.c",
-	"LuaJIT/src/lib_io.c",
-	"LuaJIT/src/lib_os.c",
-	"LuaJIT/src/lib_package.c",
-	"LuaJIT/src/lib_debug.c",
-	"LuaJIT/src/lib_jit.c",
-	"LuaJIT/src/lib_ffi.c"
+	//"LuaJIT/src/lib_io.c",
+	//"LuaJIT/src/lib_os.c",
+	//"LuaJIT/src/lib_package.c",
+	//"LuaJIT/src/lib_debug.c",
+	//"LuaJIT/src/lib_jit.c",
+	//"LuaJIT/src/lib_ffi.c"
 ];
 
 var config = [
@@ -34,7 +34,7 @@ var config = [
 	"-D","LUA_USE_APICHECK"
 ];
 
-var common_args = [
+var common_kernel_args = [
 	//"-std=gnu99",
 		
 	//"-Wall",
@@ -69,7 +69,7 @@ options.kernel = function() {
 
 		//"-S",
 		"-o","bin/FullMoon.krn"
-	].concat(common_args)).toString();
+	].concat(common_kernel_args)).toString();
 
 	console.log(compile_output);
 
@@ -88,7 +88,7 @@ options.kernel = function() {
 	console.log(">> Done!\n");
 }
 
-options.userkernel = function() {
+/*options.userkernel = function() {
 	var compile_output = child_process.execFileSync("clang",[
 		"-target","x86_64-pc-windows-gnu",
 
@@ -97,10 +97,10 @@ options.userkernel = function() {
 		"-Wl,-Map=bin/BadMoon.map",
 		//"-S",
 		"-o","bin/BadMoon.exe"
-	].concat(common_args)).toString();
+	].concat(common_kernel_args)).toString();
 
 	console.log(">> Done!\n");
-}
+}*/
 
 options.ljvm = function() {
 	child_process.execFileSync("clang",[
@@ -135,10 +135,16 @@ options.ljvm = function() {
 		"-m","folddef","-o","LuaJIT/src/lj_folddef.h","LuaJIT/src/lj_opt_fold.c"
 	]);
 
-
 	/*child_process.execFileSync("as",[
 		"bin/lj_vm.asm","-o","bin/liblj_vm.a"
 	]);*/
+}
+
+options.test = function() {
+	child_process.execFileSync("C:\\Program Files\\Oracle\\VirtualBox\\VirtualBox.exe",[
+		//"C:\\Program Files\\Oracle\\VirtualBox\\VirtualBox.exe",
+		"--startvm","Lunatic"//,"--debug"
+	]);
 }
 
 selected = options[selected];
@@ -146,5 +152,5 @@ selected = options[selected];
 if (selected) {
 	selected();
 } else {
-	console.log("Valid options: ",options);
+	console.log("Valid options: ",Object.keys(options));
 }

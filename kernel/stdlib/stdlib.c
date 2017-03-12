@@ -30,6 +30,10 @@ size_t heap_top;
 
 void align_base() {
 	while (heap_base % 16 != 0) heap_base++;
+
+	if (heap_base >= heap_top) {
+		write_str_halt("OUT OF MEMORY, MAYBE WRITE A BETTER ALLOCATOR?\n");
+	}
 }
 
 void setup_heap(size_t base, size_t top) {
@@ -63,7 +67,7 @@ unsigned long int strtoul(const char* str, char** endptr, int base) {
 	write_str_halt("str2ul\n");
 	return -1;
 }
-
+/*
 int system(const char* command) {
 	write_str_halt("system\n");
 	return -1;
@@ -74,4 +78,4 @@ char* getenv(const char* name) {
 	write_str(name);
 	write_char('\n');
 	return NULL;
-}
+}*/
