@@ -29,17 +29,20 @@ mem_heap mem_setup(size_t base, size_t top) {
 	if (base>=top)
 		write_str_halt("Not enough room for heap!");
 	
-	int size = (top-base)/16 - 1;
+	size_t size = (top-base)/16 - 1;
+	write_str(">> ");
+	write_int(size);
+	write_str("\n");
 
 	mem_node* base_node = (mem_node*)base;
 	mem_node* top_node = (mem_node*)top;
 
 	base_node->next.size = size;
-	base_node->next.used = 1;
+	base_node->next.used = 0;
 	base_node->prev.size = 0;
 
 	top_node->prev.size = size;
-	top_node->prev.used = 1;
+	top_node->prev.used = 0;
 	top_node->next.size = 0;
 
 	mem_heap result = {
@@ -51,7 +54,8 @@ mem_heap mem_setup(size_t base, size_t top) {
 }
 
 void* mem_alloc(mem_heap* heap, size_t size) {
-	mem_node* cursor = heap->cursor;
+	//asm("hlt");
+	mem_node* cursor = heap->cursor; // rbp - 18
 
 	char reset = 0;
 
@@ -80,8 +84,8 @@ void* mem_alloc(mem_heap* heap, size_t size) {
 				if (remaining_size == 0)
 					write_str_halt("Invalid remaining size!");
 
-				mem_node* back = cursor + (available_size+1)*16;
-				mem_node* middle = cursor + (req_size+1)*16;
+				mem_node* back = cursor + (1+available_size);
+				mem_node* middle = cursor + (1+req_size);
 				
 				cursor->next.size = req_size;
 				middle->prev.size = cursor->next.size;
@@ -93,16 +97,16 @@ void* mem_alloc(mem_heap* heap, size_t size) {
 				middle->prev.used = 0;
 			}
 
-			void* ptr = cursor+16;
+			void* ptr = 1+cursor;
 			
 			cursor->next.used = 1;
-			cursor = cursor + (cursor->next.size+1)*16;
+			cursor += (1+cursor->next.size);
 			cursor->prev.used = 1;
 
 			heap->cursor = cursor;
 			return ptr;
 		}
 
-		cursor = cursor + (cursor->next.size+1)*16;
+		cursor += (1+cursor->next.size);
 	}
 }

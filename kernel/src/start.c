@@ -27,28 +27,15 @@ void start_debug() {
 }
 
 void start() {
-	//asm("hlt");
-	//write_str("Balls. ");
-	//write_int(1337);
-	//write_char(' ');
-	//write_int(6969);
-
-	/*write_int(strlen(""));
-	write_char('\n');
-	write_int(strlen("xyzzy"));
-	write_char('\n');
-	write_int(strlen("The quick brown fox jumps over the lazy MEME!"));
-	write_char('\n');*/
 
 	setup_heap(kernel_info_table->kernel_top, kernel_info_table->memory_top);
-	//mem_setup(kernel_info_table->kernel_top, kernel_info_table->memory_top);
 	
 	write_str("FullMoon Kernel loaded!\n");
 
 	lua_State* state = luaL_newstate();
 	luaL_openlibs(state);
 
-	const char* test = "for k,v in pairs(_G) do print(k,v) end return 69";
+	const char* test = "print('heya',_G,true,false,bleh) local x=0 for i=1,100 do x=x+i end return x";
 
 	write_str("Test script: ");
 	write_str(test);
