@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#define EXIT_FAILURE -1
+#define EXIT_FAILURE 1
 
 void exit(int status);
 

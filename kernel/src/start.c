@@ -11,7 +11,23 @@ struct {
 	unsigned int init_file_count;
 }* kernel_info_table = (void*)0x60000;
 
+void start_debug() {
+	asm(
+		// set addr
+		"movq $0x1027ed8, %%rax\n"
+		"movq %%rax, %%dr0\n"
+
+		// global enable cr0, global enable, bit 11, ICE
+		"movq $0x1602, %%rax\n"
+		"movq %%rax, %%dr7\n"
+		:
+		:
+		: "rax"
+	);
+}
+
 void start() {
+	//asm("hlt");
 	//write_str("Balls. ");
 	//write_int(1337);
 	//write_char(' ');
@@ -27,12 +43,12 @@ void start() {
 	setup_heap(kernel_info_table->kernel_top, kernel_info_table->memory_top);
 	//mem_setup(kernel_info_table->kernel_top, kernel_info_table->memory_top);
 	
-	write_str("HELLO!\n");
+	write_str("FullMoon Kernel loaded!\n");
 
 	lua_State* state = luaL_newstate();
 	luaL_openlibs(state);
 
-	const char* test = "local x = 0 for i=1,1000 do x=x+i end print('please') return x";
+	const char* test = "for k,v in pairs(_G) do print(k,v) end return 69";
 
 	write_str("Test script: ");
 	write_str(test);
@@ -42,12 +58,16 @@ void start() {
 		write_str_halt("Failed to load test script.");
 	}
 
+	//start_debug();
+
 	lua_call(state, 0, 1);
-	double res = lua_tonumber(state, -1);
+	int res = lua_tonumber(state, -1);
 	
 	write_str("Result: ");
+	
 	write_int(res);
+
 	write_str("\n");
 	
-	write_str_halt("ALL GOOD IN THE HOOD!\n");
+	write_str_halt("All done. Halting.\n");
 }

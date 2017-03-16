@@ -18,12 +18,12 @@ size_t fwrite(const void * ptr, size_t size, size_t count, FILE * stream);
 
 int sprintf(char * str, const char * format, ...);
 
-int fputc(int character, FILE * stream);
-int fputs(const char * str, FILE * stream);
+int fputc(int character, FILE* stream);
+int fputs(const char* str, FILE* stream);
 
 int fflush(FILE * stream);
 
-int feof(FILE * stream);
-int ferror(FILE * stream);
+int feof(FILE* stream);
+int ferror(FILE* stream);
 
 int putchar(int character);
