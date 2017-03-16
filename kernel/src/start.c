@@ -25,6 +25,7 @@ void start() {
 	write_char('\n');*/
 
 	setup_heap(kernel_info_table->kernel_top, kernel_info_table->memory_top);
+	//mem_setup(kernel_info_table->kernel_top, kernel_info_table->memory_top);
 	
 	write_str("HELLO!\n");
 
