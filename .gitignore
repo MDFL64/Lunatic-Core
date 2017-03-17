@@ -11,3 +11,5 @@ bin/*.a
 *.user
 */.vs/*
 *.map
+
+plop/plop\.vdi
