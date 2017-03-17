@@ -51,10 +51,12 @@ void start() {
 	int res = lua_tonumber(state, -1);
 	
 	write_str("Result: ");
-	
 	write_int(res);
-
 	write_str("\n");
+
+	//lua_close(state);
 	
+	//check_heap();
+
 	write_str_halt("All done. Halting.\n");
 }

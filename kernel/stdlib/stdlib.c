@@ -43,6 +43,10 @@ void setup_heap(size_t base, size_t top) {
 	align_base();*/
 }
 
+void check_heap() {
+	mem_check(&heap);
+}
+
 void* realloc(void *ptr, size_t size) {
 	if (size == 0) {
 		write_str_halt("alloc size = 0\n");
@@ -54,14 +58,16 @@ void* realloc(void *ptr, size_t size) {
 
 	if (ptr != NULL) {
 		memcpy(new_ptr, ptr, size);
-		free(ptr);
+		mem_free(&heap, ptr);
 	}
 
 	return new_ptr;
 }
 
 void free(void *ptr) {
-	// TODO
+	if (ptr != NULL) {
+		mem_free(&heap, ptr);
+	}
 }
 
 unsigned long int strtoul(const char* str, char** endptr, int base) {

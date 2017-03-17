@@ -110,3 +110,75 @@ void* mem_alloc(mem_heap* heap, size_t size) {
 		cursor += (1+cursor->next.size);
 	}
 }
+
+void node_merge(mem_heap* heap, mem_node* center) {
+	
+	// Push cursor out of the way!
+	mem_node* cursor = heap->cursor;
+
+	if (cursor == center) {
+		heap->cursor = cursor + (1+cursor->next.size);
+	}
+	
+	size_t new_size = center->next.size + center->prev.size + 1;
+
+	mem_node* head = center - (1+center->prev.size);
+	mem_node* tail = center + (1+center->next.size);
+
+	head->next.size = new_size;
+	tail->prev.size = new_size;
+}
+
+void mem_free(mem_heap* heap, void* ptr) {
+	mem_node* head = ptr;
+	head--;
+	
+	mem_node* tail = head + (1+head->next.size);
+	
+	if (!head->next.used || !tail->prev.used || head->next.size != tail->prev.size) {
+		write_str_halt("BAD FREE");
+	}
+
+	head->next.used = 0;
+	tail->prev.used = 0;
+
+	if (!head->prev.used && head->prev.size > 0)
+		node_merge(heap, head);
+	
+	if (!tail->next.used && tail->next.size > 0)
+		node_merge(heap, tail);
+
+}
+
+void mem_check(mem_heap* heap) {
+	write_str("HEAP CHECK:\n");
+
+	mem_node* cursor = heap->base;
+
+	for (;;) {
+		write_int(cursor->prev.size);
+		write_char('/');
+		if (cursor->prev.used)
+			write_str("USED");
+		else
+			write_str("FREE");
+		write_str(" < ");
+		if (cursor==heap->cursor)
+			write_str("XXX");
+		else
+			write_str("   ");
+		write_str(" > ");
+		write_int(cursor->next.size);
+		write_char('/');
+		if (cursor->next.used)
+			write_str("USED");
+		else
+			write_str("FREE");
+		write_char('\n');
+
+		if (cursor->next.size!=0)
+			cursor += (1+cursor->next.size);
+		else
+			break;
+	}
+}
