@@ -30,9 +30,6 @@ mem_heap mem_setup(size_t base, size_t top) {
 		write_str_halt("Not enough room for heap!");
 	
 	size_t size = (top-base)/16 - 1;
-	write_str(">> ");
-	write_int(size);
-	write_str("\n");
 
 	mem_node* base_node = (mem_node*)base;
 	mem_node* top_node = (mem_node*)top;
