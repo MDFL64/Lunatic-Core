@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "mem.h"
 #include "screen.h"
 
 /*void _fltused() {
@@ -25,21 +26,25 @@ int arg_stub() {
 	return 0;
 }
 
-size_t heap_base;
-size_t heap_top;
+mem_heap heap;
 
-void align_base() {
+/*void align_base() {
 	while (heap_base % 16 != 0) heap_base++;
 
 	if (heap_base >= heap_top) {
 		write_str_halt("OUT OF MEMORY, MAYBE WRITE A BETTER ALLOCATOR?\n");
 	}
-}
+}*/
 
 void setup_heap(size_t base, size_t top) {
-	heap_base = base;
+	heap = mem_setup(base, top);
+	/*heap_base = base;
 	heap_top = top;
-	align_base();
+	align_base();*/
+}
+
+void check_heap() {
+	mem_check(&heap);
 }
 
 void* realloc(void *ptr, size_t size) {
@@ -47,20 +52,22 @@ void* realloc(void *ptr, size_t size) {
 		write_str_halt("alloc size = 0\n");
 	}
 	
-	void* new_ptr = (void*)heap_base;
-	heap_base += size;
-	align_base();
+	void* new_ptr = mem_alloc(&heap, size);
+	//heap_base += size;
+	//align_base();
 
 	if (ptr != NULL) {
 		memcpy(new_ptr, ptr, size);
-		free(ptr);
+		mem_free(&heap, ptr);
 	}
 
 	return new_ptr;
 }
 
 void free(void *ptr) {
-	// TODO
+	if (ptr != NULL) {
+		mem_free(&heap, ptr);
+	}
 }
 
 unsigned long int strtoul(const char* str, char** endptr, int base) {

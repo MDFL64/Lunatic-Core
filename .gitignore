@@ -1,8 +1,8 @@
 old_kernel/bin/**
+bin/*.exe
 bin/*.asm
 bin/*.a
 *.krn
-*.exe
 *.obj
 *.bin
 *.db
@@ -11,3 +11,5 @@ bin/*.a
 *.user
 */.vs/*
 *.map
+
+plop/plop\.vdi

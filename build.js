@@ -143,7 +143,7 @@ options.ljvm = function() {
 options.test = function() {
 	child_process.execFileSync("C:\\Program Files\\Oracle\\VirtualBox\\VirtualBox.exe",[
 		//"C:\\Program Files\\Oracle\\VirtualBox\\VirtualBox.exe",
-		"--startvm","Lunatic"//,"--debug"
+		"--startvm","Lunatic","--debug"
 	]);
 }
 

@@ -1,5 +1,7 @@
 #include <stdlib.h>
 
+#include <lj_obj.h>
+
 #include <lauxlib.h>
 #include <lualib.h>
 
@@ -26,47 +28,56 @@ void start_debug() {
 	);
 }
 
-void start() {
-	//asm("hlt");
-	//write_str("Balls. ");
-	//write_int(1337);
-	//write_char(' ');
-	//write_int(6969);
+void hook_func(lua_State *state, lua_Debug *dbg) {
+	write_str("~hook~\n");
+	lua_yield(state,0); // please
+	write_str("~meme~\n");
+}
 
-	/*write_int(strlen(""));
-	write_char('\n');
-	write_int(strlen("xyzzy"));
-	write_char('\n');
-	write_int(strlen("The quick brown fox jumps over the lazy MEME!"));
-	write_char('\n');*/
+void start() {
 
 	setup_heap(kernel_info_table->kernel_top, kernel_info_table->memory_top);
 	
-	write_str("FullMoon Kernel loaded!\n");
+	write_str(" - FULLMOON KERNEL LOADED -\n");
 
-	lua_State* state = luaL_newstate();
-	luaL_openlibs(state);
+	lua_State* state1 = luaL_newstate();
+	luaL_openlibs(state1);
 
-	const char* test = "for k,v in pairs(_G) do print(k,v) end return 69";
+	lua_State* state2 = luaL_newstate();
+	luaL_openlibs(state2);
 
-	write_str("Test script: ");
-	write_str(test);
-	write_char('\n');
+	//lua_State *thread1 = lua_newthread(state1);
 
-	if (luaL_loadstring(state, test)) {
-		write_str_halt("Failed to load test script.");
+
+	const char* code1 = "while true do print('Thread 1 here!') end";
+	const char* code2 = "while true do print('Thread 2 here!') end";
+
+	if (luaL_loadstring(state1, code1)) {
+		write_str_halt("Failed to load test script 1.");
 	}
 
-	//start_debug();
+	if (luaL_loadstring(state2, code2)) {
+		write_str_halt("Failed to load test script 2.");
+	}
 
-	lua_call(state, 0, 1);
-	int res = lua_tonumber(state, -1);
-	
-	write_str("Result: ");
-	
-	write_int(res);
+	lua_sethook(state1, hook_func, LUA_MASKCOUNT, 100);
 
-	write_str("\n");
-	
+	int res;
+
+	for (;;) {
+		write_str("resuming..\n");
+		res = lua_resume(state1, 0);
+		if (res!=LUA_YIELD)
+			write_str_halt("unexpected result!");
+		write_str("juan ");
+		write_int(lua_gettop(state1));
+		asm("hlt");
+		
+		/*res = lua_resume(state2, 0);
+		if (res!=LUA_YIELD)
+			write_str_halt("unexpected result!");*/
+	}
+
+
 	write_str_halt("All done. Halting.\n");
 }

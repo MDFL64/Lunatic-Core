@@ -12,7 +12,7 @@ if (process.argv[2]=="noflash") return;
 
 var bootloader_size = fs.statSync("NewMoon.bin").size;
 if (bootloader_size % 512 != 0)
-	throw "Boot code is not an even number of sectors";
+	throw "Boot code is not a whole number of sectors";
 bootloader_size /= 512;
 
 console.log(">> Locating destination drive...");
