@@ -35,8 +35,12 @@ void hook_func(lua_State *state, lua_Debug *dbg) {
 }
 
 void start() {
+	int heap_bottom = kernel_info_table->kernel_top;
+	int heap_top = kernel_info_table->memory_top;
+	if (heap_top>1073741824)
+		heap_top = 1073741824;
 
-	setup_heap(kernel_info_table->kernel_top, kernel_info_table->memory_top);
+	setup_heap(heap_bottom, heap_top);
 	
 	write_str(" - FULLMOON KERNEL LOADED -\n");
 
@@ -47,7 +51,6 @@ void start() {
 	luaL_openlibs(state2);
 
 	//lua_State *thread1 = lua_newthread(state1);
-
 
 	const char* code1 = "while true do print('Thread 1 here!') end";
 	const char* code2 = "while true do print('Thread 2 here!') end";
