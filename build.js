@@ -113,12 +113,12 @@ options.ljvm = function() {
 	child_process.execFileSync("clang",[
 		"-target","x86_64-pc-windows-gnu","-I","LuaJIT/src","LuaJIT/src/host/buildvm*.c","-o","bin/buildvm.exe"
 	].concat(config));
-	/*child_process.execFileSync("bin/buildvm",[
-		"-m","coffasm","-o","bin/lj_vm.asm"
-	]);*/
 	child_process.execFileSync("bin/buildvm",[
-		"-m","peobj","-o","bin/liblj_vm.a"
+		"-m","coffasm","-o","bin/lj_vm.asm"
 	]);
+	/*child_process.execFileSync("bin/buildvm",[
+		"-m","peobj","-o","bin/liblj_vm.a"
+	]);*/
 	child_process.execFileSync("bin/buildvm",[
 		"-m","libdef","-o","LuaJIT/src/lj_libdef.h"
 	].concat(libs));
@@ -135,9 +135,9 @@ options.ljvm = function() {
 		"-m","folddef","-o","LuaJIT/src/lj_folddef.h","LuaJIT/src/lj_opt_fold.c"
 	]);
 
-	/*child_process.execFileSync("as",[
+	child_process.execFileSync("as",[
 		"bin/lj_vm.asm","-o","bin/liblj_vm.a"
-	]);*/
+	]);
 }
 
 options.test = function() {

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 
 #include <lj_obj.h>
+#include <lj_frame.h>
 
 #include <lauxlib.h>
 #include <lualib.h>
@@ -16,7 +17,7 @@ struct {
 void start_debug() {
 	asm(
 		// set addr
-		"movq $0x1027ed8, %%rax\n"
+		"movq $0x103ce88, %%rax\n"
 		"movq %%rax, %%dr0\n"
 
 		// global enable cr0, global enable, bit 11, ICE
@@ -28,10 +29,33 @@ void start_debug() {
 	);
 }
 
+void check_frames(lua_State* state) {
+	cTValue *frame = state->base-1;
+	cTValue *bot = tvref(state->stack)+LJ_FR2;
+	
+	while (frame > bot) {
+		write_str("Frame: ");
+		write_hex(frame);
+		write_char(' ');
+		write_int(frame_pc(frame));
+		write_char(' ');
+		write_int(frame_typep(frame));
+
+		if (frame_typep(frame) == FRAME_CONT) {
+			write_str(" CONTINUATION ");
+			write_hex(frame_contpc(frame));
+			write_char(' ');
+			write_hex(frame_contv(frame));
+		}
+
+		write_char('\n');
+
+		frame = frame_prev(frame);
+	}
+}
+
 void hook_func(lua_State *state, lua_Debug *dbg) {
-	write_str("~hook~\n");
 	lua_yield(state,0); // please
-	write_str("~meme~\n");
 }
 
 void start() {
@@ -63,22 +87,32 @@ void start() {
 		write_str_halt("Failed to load test script 2.");
 	}
 
-	lua_sethook(state1, hook_func, LUA_MASKCOUNT, 100);
+	lua_sethook(state1, hook_func, LUA_MASKCOUNT, 10);
+	lua_sethook(state2, hook_func, LUA_MASKCOUNT, 10);
 
 	int res;
 
 	for (;;) {
-		write_str("resuming..\n");
+		//write_str("resuming...\n");
+
 		res = lua_resume(state1, 0);
 		if (res!=LUA_YIELD)
-			write_str_halt("unexpected result!");
-		write_str("juan ");
-		write_int(lua_gettop(state1));
-		asm("hlt");
+			write_str_halt("Unexpected result!");
 		
-		/*res = lua_resume(state2, 0);
+		res = lua_resume(state2, 0);
 		if (res!=LUA_YIELD)
-			write_str_halt("unexpected result!");*/
+			write_str_halt("unexpected result!");
+		
+		//write_str("OUT\n");
+		//check_frames(state1);
+
+		//write_hex(state1);
+		//start_debug();
+		
+		//write_str_halt("Halt!");
+		//write_int(lua_gettop(state1));
+		//asm("hlt");
+		
 	}
 
 

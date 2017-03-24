@@ -17,8 +17,7 @@ unsigned long _byteswap_ulong(unsigned long x) {
 }*/
 
 void exit(int status) {
-	write_str_halt("exit\n");
-	for (;;);
+	write_str_halt("EXIT WAS CALLED, SOMETHING HAS GONE BADLY WRONG!\n");
 }
 
 int arg_stub() {

@@ -22,7 +22,7 @@ size_t fread(void * ptr, size_t size, size_t count, FILE* stream) {
 }
 
 size_t fwrite(const void * ptr, size_t size, size_t count, FILE* stream) {
-	if (stream == stdout) {
+	if (stream == stdout || stream == stderr) {
 		write_str_n(ptr, size * count);
 		return count;
 	}
@@ -41,19 +41,39 @@ int sprintf(char * str, const char * format, ...) {
 }
 
 int fputc(int character, FILE * stream) {
-	write_str_halt("fputc\n");
-	return -1;
+	if (stream == stdout || stream == stderr) {
+		write_char(character);
+		return character;
+	} else {
+		write_str_halt("fputc to: ");
+		write_int((long)stream);
+		write_str("\n");
+		write_str_halt(":(");
+		return 0;
+	}
 }
 
 int fputs(const char * str, FILE * stream) {
-	write_str_halt("fputs\n");
-	write_str(str);
-	return -1;
+	if (stream == stdout || stream == stderr) {
+		write_str(str);
+		return 1;
+	} else {
+		write_str_halt("fputs to: ");
+		write_int((long)stream);
+		write_str("\n");
+		write_str_halt(":(");
+		return 0;
+	}
 }
 
 int fflush(FILE * stream) {
-	write_str_halt("fflush\n");
-	return -1;
+	if (stream == stdout || stream == stderr)
+		return 0; // do nothing
+	
+	write_str_halt("fflush on: ");
+	write_int((long)stream);
+	write_str("\n");
+	write_str_halt(":(");
 }
 
 int feof(FILE * stream) {
