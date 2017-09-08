@@ -83,7 +83,7 @@ options.kernel = function() {
 	var drive_letter = drive[2];
 
 	console.log(">> Copying...\n");
-	child_process.execFileSync("xcopy",["bin\\FullMoon.krn",drive_letter+"\\Lunatic\\init\\","/Y"]);
+	child_process.execFileSync("xcopy",["bin\\FullMoon.krn",drive_letter+"\\Lunatic\\Init\\","/Y"]);
 
 	console.log(">> Done!\n");
 }
