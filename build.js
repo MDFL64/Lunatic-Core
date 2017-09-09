@@ -15,7 +15,7 @@ var libs = [
 	//"LuaJIT/src/lib_package.c",
 	//"LuaJIT/src/lib_debug.c",
 	//"LuaJIT/src/lib_jit.c",
-	//"LuaJIT/src/lib_ffi.c"
+	"LuaJIT/src/lib_ffi.c"
 ];
 
 var config = [
@@ -26,7 +26,7 @@ var config = [
 	"-D","LUAJIT_NO_UNWIND",
 
 	"-D","LUAJIT_DISABLE_JIT",
-	"-D","LUAJIT_DISABLE_FFI",
+	//"-D","LUAJIT_DISABLE_FFI",
 
 	"-D","LUAJIT_ENABLE_GC64",
 
@@ -107,7 +107,7 @@ options.ljvm = function() {
 		"-target","x86_64-pc-windows-gnu","LuaJIT/src/host/minilua.c","-o","bin/minilua.exe"
 	]);
 	child_process.execFileSync("bin/minilua",[ // "-D","JIT" "-D","FFI" "-D","WIN"
-		"LuaJIT/dynasm/dynasm.lua","-LN","-D","NO_UNWIND","-o","LuaJIT/src/host/buildvm_arch.h","LuaJIT/src/vm_x64.dasc"
+		"LuaJIT/dynasm/dynasm.lua","-LN","-D","FFI","-D","NO_UNWIND","-o","LuaJIT/src/host/buildvm_arch.h","LuaJIT/src/vm_x64.dasc"
 	]);
 
 	child_process.execFileSync("clang",[

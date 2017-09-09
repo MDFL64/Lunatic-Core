@@ -1,11 +1,11 @@
-#pragma once // DONE
+#pragma once
 
-typedef long va_list;
+#include "screen.h"
 
-int arg_stub();
+typedef __builtin_va_list va_list;
 
-#define va_arg(args,type) arg_stub()
+#define va_arg(args,type) __builtin_va_arg(args,type)
 
-#define va_start(args,last)
+#define va_start(args,last) __builtin_va_start(args,last)
 
-#define va_end(args)
+#define va_end(args) __builtin_va_end(args)

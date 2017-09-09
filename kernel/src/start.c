@@ -58,6 +58,17 @@ void hook_func(lua_State *state, lua_Debug *dbg) {
 	lua_yield(state,0); // please
 }
 
+/*void ballus(int n, ...) {
+	va_list vargs;
+	va_start(vargs, n);
+	for (int i=0;i<n;i++) {
+		int x = va_arg(vargs,int);
+			write_hex(x);
+			write_str("\n");
+	}
+	va_end(vargs);
+}*/
+
 void start() {
 	int heap_bottom = kernel_info_table->kernel_top;
 	int heap_top = kernel_info_table->memory_top;
@@ -70,14 +81,16 @@ void start() {
 
 	lua_State* state1 = luaL_newstate();
 	luaL_openlibs(state1);
+	luaopen_ffi(state1);
+	lua_setglobal(state1,"ffi");
 
 	lua_State* state2 = luaL_newstate();
 	luaL_openlibs(state2);
 
 	//lua_State *thread1 = lua_newthread(state1);
 
-	const char* code1 = "while true do print('Thread 1 here!') end";
-	const char* code2 = "while true do print('Thread 2 here!') end";
+	const char* code1 = "local s = '' for k,v in pairs(_G) do s=s..k..' ' end print(s) print(ffi) while true do end";
+	const char* code2 = "print('yo') while true do end";
 
 	if (luaL_loadstring(state1, code1)) {
 		write_str_halt("Failed to load test script 1.");
@@ -96,12 +109,15 @@ void start() {
 		//write_str("resuming...\n");
 
 		res = lua_resume(state1, 0);
-		if (res!=LUA_YIELD)
-			write_str_halt("Unexpected result!");
+		if (res!=LUA_YIELD) {
+			write_str_halt(lua_tostring(state1,-1));
+			write_str_halt(" ~ Unexpected result!");
+		}
 		
 		res = lua_resume(state2, 0);
-		if (res!=LUA_YIELD)
-			write_str_halt("unexpected result!");
+		if (res!=LUA_YIELD) {
+			write_str_halt(lua_tostring(state2,-1));
+		}
 		
 		//write_str("OUT\n");
 		//check_frames(state1);

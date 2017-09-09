@@ -20,11 +20,6 @@ void exit(int status) {
 	write_str_halt("EXIT WAS CALLED, SOMETHING HAS GONE BADLY WRONG!\n");
 }
 
-int arg_stub() {
-	write_str("get arg\n");
-	return 0;
-}
-
 mem_heap heap;
 
 /*void align_base() {

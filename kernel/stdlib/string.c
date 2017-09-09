@@ -79,14 +79,27 @@ char* strcpy(char* destination, const char * source) {
 		source++;
 		destination++;
 	}
-	*destination = *source;
+	*destination = 0;
 
 	return destination;
 }
 
 char* strncpy(char * destination, const char * source, size_t num) {
-	write_str_halt("strncpy\n");
-	return 0;
+	int i=0;
+	while (i<num && *source != 0) {
+		*destination = *source;
+		
+		source++;
+		destination++;
+		i++;
+	}
+	while (i<num) {
+		*destination = 0;
+
+		destination++;
+		i++;
+	}
+	return destination;
 }
 
 char *strerror(int errnum) {
