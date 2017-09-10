@@ -1,4 +1,4 @@
-# Lunatic-Moon
+# Lunatic-Core
 
 [![forthebadge](http://forthebadge.com/images/badges/built-by-codebabes.svg)](http://forthebadge.com)
 
@@ -8,4 +8,4 @@ John Lua told me to make this.
 
 -----------------------------------
 
-This repository contains the sources and development scripts for Lunatic OS's bootloader and kernel.
+This repository contains Lunatic OS's startup code and related development scripts.
