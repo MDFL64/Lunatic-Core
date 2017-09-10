@@ -8,11 +8,14 @@
 
 #include "screen.h"
 
+#pragma pack(push,1)
 struct {
 	size_t memory_top;
 	size_t kernel_top;
 	unsigned int init_file_count;
+	struct {char name [11]; int addr; int size} init_files [];
 }* kernel_info_table = (void*)0x60000;
+#pragma pack(pop)
 
 void start_debug() {
 	asm(
@@ -79,54 +82,60 @@ void start() {
 	
 	write_str(" - FULLMOON KERNEL LOADED -\n");
 
-	lua_State* state1 = luaL_newstate();
-	luaL_openlibs(state1);
-	luaopen_ffi(state1);
-	lua_setglobal(state1,"ffi");
-
-	lua_State* state2 = luaL_newstate();
-	luaL_openlibs(state2);
-
-	//lua_State *thread1 = lua_newthread(state1);
-
-	const char* code1 = "local s = '' for k,v in pairs(_G) do s=s..k..' ' end print(s) print(ffi) while true do end";
-	const char* code2 = "print('yo') while true do end";
-
-	if (luaL_loadstring(state1, code1)) {
-		write_str_halt("Failed to load test script 1.");
+	char* init_addr = 0;
+	size_t init_size = 0;
+	for (int i=0;i<kernel_info_table->init_file_count;i++) {
+		if (memcmp("INIT    LUA",kernel_info_table->init_files[i].name,11) == 0) {
+			init_addr = (char*)(kernel_info_table->init_files[i].addr);
+			init_size = kernel_info_table->init_files[i].size;
+			break;
+		}
 	}
 
-	if (luaL_loadstring(state2, code2)) {
-		write_str_halt("Failed to load test script 2.");
+	if (init_addr==0) {
+		write_str_halt("Could not find init script.");
 	}
 
-	lua_sethook(state1, hook_func, LUA_MASKCOUNT, 10);
-	lua_sethook(state2, hook_func, LUA_MASKCOUNT, 10);
+	lua_State* state = luaL_newstate();
+	luaL_openlibs(state);
+	luaopen_ffi(state);
+	lua_setglobal(state,"ffi");
+
+	if (luaL_loadbuffer(state, init_addr, init_size, "init.lua")) {
+		write_str_halt("Error loading init: ???");
+	}
+
+	if (lua_pcall(state,0,0,0) != 0) {
+		write_str("Error in init:");
+		write_str_halt(lua_tostring(state,-1));
+	}
+
+	write_str_halt("All done. Halting.");
 
 	int res;
 
 	for (;;) {
 		//write_str("resuming...\n");
 
-		res = lua_resume(state1, 0);
+		//res = lua_resume(state, 0);
 		if (res!=LUA_YIELD) {
-			write_str_halt(lua_tostring(state1,-1));
+			write_str_halt(lua_tostring(state,-1));
 			write_str_halt(" ~ Unexpected result!");
 		}
 		
-		res = lua_resume(state2, 0);
+		//res = lua_resume(state2, 0);
 		if (res!=LUA_YIELD) {
-			write_str_halt(lua_tostring(state2,-1));
+			//write_str_halt(lua_tostring(state2,-1));
 		}
 		
 		//write_str("OUT\n");
-		//check_frames(state1);
+		//check_frames(state);
 
-		//write_hex(state1);
+		//write_hex(state);
 		//start_debug();
 		
 		//write_str_halt("Halt!");
-		//write_int(lua_gettop(state1));
+		//write_int(lua_gettop(state));
 		//asm("hlt");
 		
 	}
