@@ -63,6 +63,10 @@ boot_stage1:
 	; make sure the video mode is what we want
 	mov ax, 3
 	int 0x10
+	
+	; greet
+	mov si, msg_greet
+	call print_str
 
 	; relocate stack
 	mov ax,0x5000
@@ -131,12 +135,14 @@ disk_addr:
 	.sector_index:
 	dq 1
 
+msg_greet:
+	db "Lunatic OS / NewMoon Loader / Version 1",0x0a,0x0d,0
 error_disk_unsupported:
 	db "Can't read sectors from disk.",0
 error_disk_failed:
 	db "Failed to read sectors from disk.",0
 error_halt:
-	db 0x0a,0x0a,0x0d," - NEWMOON BOOTLOADER HALTED -",0
+	db 0x0a,0x0d,"Loader halted.",0
 
 ; Fill out boot sector.
 bytes_left = 510-($-$$)
@@ -821,7 +827,7 @@ error_fat_cluster:
 error_fat_overflow:
 	db "The FAT read function overflowed its buffer. Whoops.",0
 error_fat_file_not_found:
-	db "Failed to find a file required to boot.",0
+	db "Failed to find a required file.",0
 error_fat_index_init_dir:
 	db "Failed to index init directory.",0
 
@@ -888,7 +894,7 @@ boot_stage3:
 	mov ecx, [kernel_info_table.init_file_count+0x60000]
 	mov rsi, kernel_info_table.init_files+0x60000
 	mov rbx, "FULLMOON"
-	mov edx, "NKRN"
+	mov edx, "NEXE"
 	
 	find_kernel_loop:
 	mov rax, [rsi]
@@ -994,7 +1000,14 @@ boot_stage3:
 	
 	add edx,40
 	loop .section_loop
-
+	
+	call enter_real
+	use16
+	mov si, msg_launch
+	call print_str
+	call enter_long
+	use64
+	
 	; enable sse for float ops
 	mov rax, cr4
 	or rax, 0x200
@@ -1016,7 +1029,8 @@ boot_stage3:
 
 
 
-
+msg_launch:
+	db "Launching core binary.",0x0a,0x0d,0
 
 ; drop back into real mode, maybe reset graphics mode, print message
 long_halt:
@@ -1025,19 +1039,19 @@ long_halt:
 	jmp boot_halt
 
 error_kernel_missing:
-	db "Failed to locate kernel.",0
+	db "Failed to locate core binary.",0
 
 error_kernel_invalid:
-	db "The supplied kernel is invalid.",0
+	db "The supplied core binary is invalid.",0
 
 error_kernel_32:
-	db "A 32 bit kernel was supplied. Only 64 bit kernels are supported.",0
+	db "A 32 bit core binary was supplied. Only 64 bit core binaries are supported.",0
 
 error_kernel_not_native:
-	db "The kernel is a non-native PE.",0
+	db "The core binary is a non-native PE.",0
 
 error_kernel_bad_offset:
-	db "The kernel does not want to be loaded in the correct place.",0
+	db "The core binary does not want to be loaded at the correct address.",0
 
 ; Fill disk to even number of sectors!
 times 512-(($-$$) mod 512) db 0

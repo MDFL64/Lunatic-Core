@@ -72,15 +72,13 @@ void hook_func(lua_State *state, lua_Debug *dbg) {
 	va_end(vargs);
 }*/
 
-void start() {
+char* start() {
 	int heap_bottom = kernel_info_table->kernel_top;
 	int heap_top = kernel_info_table->memory_top;
 	if (heap_top>1073741824)
 		heap_top = 1073741824;
 
 	setup_heap(heap_bottom, heap_top);
-	
-	write_str(" - FULLMOON KERNEL LOADED -\n");
 
 	char* init_addr = 0;
 	size_t init_size = 0;
@@ -93,7 +91,7 @@ void start() {
 	}
 
 	if (init_addr==0) {
-		write_str_halt("Could not find init script.");
+		return "Could not find kernel.";
 	}
 
 	lua_State* state = luaL_newstate();
@@ -101,16 +99,16 @@ void start() {
 	luaopen_ffi(state);
 	lua_setglobal(state,"ffi");
 
-	if (luaL_loadbuffer(state, init_addr, init_size, "init.lua")) {
-		write_str_halt("Error loading init: ???");
+	if (luaL_loadbuffer(state, init_addr, init_size, "kernel.lua")) {
+		return "Error loading init: ???";
 	}
 
 	if (lua_pcall(state,0,0,0) != 0) {
 		write_str("Error in init:");
-		write_str_halt(lua_tostring(state,-1));
+		return lua_tostring(state,-1);
 	}
 
-	write_str_halt("All done. Halting.");
+	return "Clean exit.";
 
 	int res;
 
@@ -141,5 +139,5 @@ void start() {
 	}
 
 
-	write_str_halt("All done. Halting.\n");
+	//write_str_halt("All done. Halting.\n");
 }
