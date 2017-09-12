@@ -73,6 +73,7 @@ void hook_func(lua_State *state, lua_Debug *dbg) {
 }*/
 
 char* start() {
+	
 	int heap_bottom = kernel_info_table->kernel_top;
 	int heap_top = kernel_info_table->memory_top;
 	if (heap_top>1073741824)
@@ -83,7 +84,7 @@ char* start() {
 	char* init_addr = 0;
 	size_t init_size = 0;
 	for (int i=0;i<kernel_info_table->init_file_count;i++) {
-		if (memcmp("INIT    LUA",kernel_info_table->init_files[i].name,11) == 0) {
+		if (memcmp("KERNEL  LUA",kernel_info_table->init_files[i].name,11) == 0) {
 			init_addr = (char*)(kernel_info_table->init_files[i].addr);
 			init_size = kernel_info_table->init_files[i].size;
 			break;

@@ -97,6 +97,8 @@ boot_stage1:
 
 boot_halt:
 	call print_str
+	mov si,0
+	mov ds,si
 	mov si,error_halt
 	call print_str
 	cli
@@ -1016,9 +1018,24 @@ boot_stage3:
 	; reset fpu
 	fninit
 
-	mov rsp,0x5FFF8
-
-	jmp r11
+	mov rsp,0x5FFF0
+	call r11
+	
+	; copy result string
+	mov ecx, 1024
+	mov esi, eax
+	mov edi, 0x60000
+	repe movsb
+	
+	call enter_real
+	use16
+	mov si, msg_done
+	call print_str
+	mov bx,0x6000
+	mov ds,bx
+	mov si, 0
+	call boot_halt
+	
 
 ;kernel_source:
 ;	dd 0
@@ -1027,7 +1044,8 @@ boot_stage3:
 
 
 
-
+msg_done:
+	db "Core has stopped:",0x0a,0x0d,0
 
 msg_launch:
 	db "Launching core binary.",0x0a,0x0d,0
